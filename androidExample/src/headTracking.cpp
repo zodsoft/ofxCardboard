@@ -20,8 +20,9 @@ void headTracking::setup() {
     mEkfToHeadTracker.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     ofQuaternion rotation = ofQuaternion(90, 1, 0, 0);
     mEkfToHeadTracker.setRotate(rotation);
-//	ofxAccelerometer.setup();
-//	ofxRegisterAccelEvents(this);
+    mTracker.reset();
+	ofxAccelerometer.setup();
+	ofxRegisterAccelEvents(this);
 	ofLog() << "headTracking setup" << endl;
 }
 
@@ -51,7 +52,7 @@ void headTracking::gyroChanged(SensorEvent & event) {
 
 void headTracking::processSensorEvent(SensorEvent event) {
 	long timeNanos = ofGetElapsedTimeMicros();
-	ofLog() << "headTracking processSensorEvent" << endl;
+	//ofLog() << "headTracking processSensorEvent" << endl;
 	mTmpRotatedEvent.x = (-event.reading.y);
 	mTmpRotatedEvent.y = event.reading.x;
 	mTmpRotatedEvent.z = event.reading.z;

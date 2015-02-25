@@ -112,7 +112,7 @@ public:
 		result =r2*r1;
 	}
 
-	void rotationPiAboutAxis(ofVec3f v, ofMatrix3x3 result) {
+	void rotationPiAboutAxis(ofVec3f v, ofMatrix3x3 & result) {
 		rotationPiAboutAxisTemp.set(v);
 		rotationPiAboutAxisTemp.scale(
 				3.141592653589793 / rotationPiAboutAxisTemp.length());
@@ -124,7 +124,7 @@ public:
 		roriguesSo3Exp(rotationPiAboutAxisTemp, kA, kB, result);
 	}
 
-	void sO3FromMu(ofVec3f w, ofMatrix3x3 result) {
+	void sO3FromMu(ofVec3f w, ofMatrix3x3 & result) {
 		float thetaSq = w.dot(w);
 		float theta = sqrt(thetaSq);
 		float kA, kB;
@@ -212,9 +212,6 @@ public:
 		result.h = b + a;
 	}
     
-//    result.set(i, 0, 0.0D);
-//    result.set((i + 1) % 3, 0, -pos.get((i + 2) % 3, 0));
-//    result.set((i + 2) % 3, 0, pos.get((i + 1) % 3, 0));
 
 	void generatorField(int i, ofMatrix3x3& pos, ofMatrix3x3& result) {
         if(i == 0){

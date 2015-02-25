@@ -5,19 +5,32 @@ void ofApp::setup(){
 //    ofSetVerticalSync(true);
 //    ofSetFrameRate(60);
     tracking.setup();
-}
-
-//--------------------------------------------------------------
-void ofApp::update(){
+    
     SensorEvent gyro;
-    gyro.reading.set(90*sin(ofGetElapsedTimef()*0.091231), 0, 0);
+    gyro.reading.set(sin(ofGetElapsedTimef()*0.091231), 0, 0);
     gyro.timestamp = ofGetElapsedTimeMillis();
     gyro.type = GYRO;
     tracking.processSensorEvent(gyro);
     
     
     SensorEvent accel;
-    accel.reading.set(sin(ofGetElapsedTimef()*0.091231), -9.8, sin(ofGetElapsedTimef()*0.091231));
+    accel.reading.set(sin(ofGetElapsedTimef()*0.091231), -1, sin(ofGetElapsedTimef()*0.091231));
+    accel.timestamp = ofGetElapsedTimeMillis();
+    accel.type = ACCEL;
+    tracking.processSensorEvent(accel);
+}
+
+//--------------------------------------------------------------
+void ofApp::update(){
+    SensorEvent gyro;
+    gyro.reading.set(1, 90, 0);
+    gyro.timestamp = ofGetElapsedTimeMillis();
+    gyro.type = GYRO;
+    tracking.processSensorEvent(gyro);
+    
+    
+    SensorEvent accel;
+    accel.reading.set(1, -9.8, 1);
     accel.timestamp = ofGetElapsedTimeMillis();
     accel.type = ACCEL;
     tracking.processSensorEvent(accel);

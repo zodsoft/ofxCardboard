@@ -290,8 +290,8 @@ ofMatrix4x4 OrientationEKF::getGLMatrix() {
 
 ofMatrix4x4 OrientationEKF::getPredictedGLMatrix(
 		float secondsAfterLastGyroEvent) {
-	ofLog() << "headTracking getLastHeadView" << secondsAfterLastGyroEvent
-			<< endl;
+//	ofLog() << "headTracking getPredictedGLMatrix" << secondsAfterLastGyroEvent
+//			<< endl;
 	float dT = secondsAfterLastGyroEvent;
 	ofVec3f pmu = getPredictedGLMatrixTempV1;
 	pmu.set(lastGyro.x * -dT, lastGyro.y * -dT, lastGyro.z * -dT);
@@ -306,8 +306,9 @@ ofMatrix4x4 OrientationEKF::getPredictedGLMatrix(
 }
 
 ofMatrix4x4 OrientationEKF::glMatrixFromSo3(ofMatrix3x3 so3) {
-	ofMatrix4x4 rotationMatrix;
-	float * ptr = rotationMatrix.getPtr();
+
+    vector<float> ptr;
+    ptr.resize(16);
 	for (int r = 0; r < 3; r++) {
 		for (int c = 0; c < 3; c++) {
 			if (r == 0) {
@@ -347,6 +348,8 @@ ofMatrix4x4 OrientationEKF::glMatrixFromSo3(ofMatrix3x3 so3) {
 
 	ptr[15] = 1.0;
 
+    ofMatrix4x4 rotationMatrix = ofMatrix4x4(ptr[0], ptr[1], ptr[2], ptr[3], ptr[4], ptr[5], ptr[6], ptr[7], ptr[8], ptr[9], ptr[10], ptr[11], ptr[12], ptr[13], ptr[14], ptr[15]);
+    
 	return rotationMatrix;
 }
 void OrientationEKF::filterGyroTimestep(float timeStep) {
