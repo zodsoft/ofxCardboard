@@ -8,10 +8,7 @@
 #include "headTracking.h"
 
 headTracking::headTracking() {
-	mTmpHeadView.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	mEkfToHeadTracker.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	ofQuaternion rotation = ofQuaternion(90, 1, 0, 0);
-	mEkfToHeadTracker.setRotate(rotation);
+
 }
 
 headTracking::~headTracking() {
@@ -19,8 +16,12 @@ headTracking::~headTracking() {
 }
 
 void headTracking::setup() {
-	ofxAccelerometer.setup();
-	ofxRegisterAccelEvents(this);
+    mTmpHeadView.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    mEkfToHeadTracker.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    ofQuaternion rotation = ofQuaternion(90, 1, 0, 0);
+    mEkfToHeadTracker.setRotate(rotation);
+//	ofxAccelerometer.setup();
+//	ofxRegisterAccelEvents(this);
 	ofLog() << "headTracking setup" << endl;
 }
 
