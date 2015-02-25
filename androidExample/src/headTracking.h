@@ -21,7 +21,7 @@ public:
     OrientationEKF mTracker;
 private:
     ofMatrix4x4 mEkfToHeadTracker;
-    ofMatrix4x4 mTmpHeadView;
+    vector<float> mTmpHeadView;
     ofVec3f mTmpRotatedEvent;
     bool mTracking;
 

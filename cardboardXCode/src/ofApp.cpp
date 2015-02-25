@@ -23,14 +23,14 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     SensorEvent gyro;
-    gyro.reading.set(1, 90, 0);
+    gyro.reading.set(sin(ofGetElapsedTimef()), 90, 0);
     gyro.timestamp = ofGetElapsedTimeMillis();
     gyro.type = GYRO;
     tracking.processSensorEvent(gyro);
     
     
     SensorEvent accel;
-    accel.reading.set(1, -9.8, 1);
+    accel.reading.set(sin(ofGetElapsedTimef()), -9.8, 1);
     accel.timestamp = ofGetElapsedTimeMillis();
     accel.type = ACCEL;
     tracking.processSensorEvent(accel);
