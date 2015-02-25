@@ -64,7 +64,7 @@ public:
 		return 2;
 	}
 
-	void sO3FromTwoVec(ofVec3f a, ofVec3f b, ofMatrix3x3& result) {
+	void sO3FromTwoVec(ofVec3f a, ofVec3f b, ofMatrix3x3 & result) {
 		sO3FromTwoVecN = a.cross(b);
 		if (sO3FromTwoVecN.length() == 0.0) {
 			float dot = a.dot(b);

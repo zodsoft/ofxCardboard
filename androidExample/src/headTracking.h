@@ -14,7 +14,7 @@ public:
 	headTracking();
 	virtual ~headTracking();
 	void setup();
-	ofMatrix4x4 getLastHeadView(ofMatrix4x4 headView);
+	ofMatrix4x4 getLastHeadView(ofMatrix4x4 & headView);
     void processSensorEvent(SensorEvent event);
     void accelerationChanged(SensorEvent & event);
     void gyroChanged(SensorEvent & event);

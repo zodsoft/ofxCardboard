@@ -19,7 +19,7 @@ void headTransform::setMatrix(ofMatrix4x4 mat){
 	mHeadView = mat;
 }
 
-ofMatrix4x4 headTransform::getHeadView()
+ofMatrix4x4 & headTransform::getHeadView()
 {
 	return mHeadView;
 }

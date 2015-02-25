@@ -7,14 +7,14 @@ void ofApp::setup(){
     tracking.setup();
     
     SensorEvent gyro;
-    gyro.reading.set(sin(ofGetElapsedTimef()*0.091231), 0, 0);
+    gyro.reading.set(0, 0, 0);
     gyro.timestamp = ofGetElapsedTimeMillis();
     gyro.type = GYRO;
     tracking.processSensorEvent(gyro);
     
     
     SensorEvent accel;
-    accel.reading.set(sin(ofGetElapsedTimef()*0.091231), -1, sin(ofGetElapsedTimef()*0.091231));
+    accel.reading.set(sin(ofGetElapsedTimef()*0.091231)*10.0, -1, sin(ofGetElapsedTimef()*0.091231));
     accel.timestamp = ofGetElapsedTimeMillis();
     accel.type = ACCEL;
     tracking.processSensorEvent(accel);
@@ -23,14 +23,14 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     SensorEvent gyro;
-    gyro.reading.set(sin(ofGetElapsedTimef()), 90, 0);
+    gyro.reading.set(sin(ofGetElapsedTimef()), 0, 0);
     gyro.timestamp = ofGetElapsedTimeMillis();
     gyro.type = GYRO;
     tracking.processSensorEvent(gyro);
     
     
     SensorEvent accel;
-    accel.reading.set(sin(ofGetElapsedTimef()), -9.8, 1);
+    accel.reading.set(9.8, 0, 0);
     accel.timestamp = ofGetElapsedTimeMillis();
     accel.type = ACCEL;
     tracking.processSensorEvent(accel);
@@ -39,17 +39,20 @@ void ofApp::update(){
 //--------------------------------------------------------------
 void ofApp::draw(){
     ofPushMatrix();
-    ofMatrix4x4 foo = tracking.getLastHeadView(transform.getHeadView());
+    ofMatrix4x4 foo;
+    foo = tracking.getLastHeadView(transform.getHeadView());
     transform.setMatrix(foo);
+
+    ofLog()<<ofToString(transform.getHeadView(), 20)<<endl;
     //	glPushMatrix();
     //	glMatrixMode(GL_PROJECTION);
     //	glPushMatrix();
     //	glMatrixMode(GL_MODELVIEW);
     //	glMultMatrixf((GLfloat*)transform.getHeadView().getPtr());
     ofSetColor(0, 0, 0);
-    ofDrawBitmapString(ofToString(transform.getHeadView()), 100, 200);
-    ofDrawBitmapString(ofToString(tracking.mTracker.getLastGyro()), 100, 400);
-    ofDrawBitmapString(ofToString(tracking.mTracker.getLastAccel()), 100, 500);
+//    ofDrawBitmapString(ofToString(foo, 40), 100, 200);
+//    ofDrawBitmapString(ofToString(tracking.mTracker.getLastGyro()), 100, 400);
+//    ofDrawBitmapString(ofToString(tracking.mTracker.getLastAccel()), 100, 500);
     //	glPopMatrix();
     //	glMatrixMode(GL_PROJECTION);
     //	glPopMatrix();

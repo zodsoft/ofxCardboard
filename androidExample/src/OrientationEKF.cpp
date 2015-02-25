@@ -140,7 +140,7 @@ void OrientationEKF::processAcc(ofVec3f acc, long sensorTimeStamp) {
 			ofVec3f withDelta = processAccTempV1;
 
 			processAccTempV2 = mNu - withDelta;
-			processAccTempV2 *= 1.0 / eps;
+			processAccTempV2 *= (1.0 / eps);
 			if (dof == 0) {
 				mH.a = processMagTempV2.x;
 				mH.d = processMagTempV2.y;
@@ -162,6 +162,8 @@ void OrientationEKF::processAcc(ofVec3f acc, long sensorTimeStamp) {
 		processAccTempM5 = mH * processAccTempM4;
 		mS = processAccTempM5 + mRaccel;
 
+        
+        
 		processAccTempM3 = mS;
 		processAccTempM3.invert();
 		processAccTempM4 = mH;
@@ -299,13 +301,13 @@ ofMatrix4x4 OrientationEKF::getPredictedGLMatrix(
 	;
 	So3.sO3FromMu(pmu, so3PredictedMotion);
 
-	ofMatrix3x3 so3PredictedState;
+    ofMatrix3x3 so3PredictedState = getPredictedGLMatrixTempM2;
 	so3PredictedState = so3PredictedMotion * so3SensorFromWorld;
 
 	return glMatrixFromSo3(so3PredictedState);
 }
 
-ofMatrix4x4 OrientationEKF::glMatrixFromSo3(ofMatrix3x3 so3) {
+ofMatrix4x4 OrientationEKF::glMatrixFromSo3(ofMatrix3x3 & mat) {
 
     vector<float> ptr;
     ptr.resize(16);
@@ -313,27 +315,27 @@ ofMatrix4x4 OrientationEKF::glMatrixFromSo3(ofMatrix3x3 so3) {
 		for (int c = 0; c < 3; c++) {
 			if (r == 0) {
 				if (c == 0) {
-					ptr[(4 * c + r)] = so3.a;
+					ptr[(4 * c + r)] = mat.a;
 				} else if (c == 1) {
-					ptr[(4 * c + r)] = so3.b;
+					ptr[(4 * c + r)] = mat.b;
 				} else {
-					ptr[(4 * c + r)] = so3.c;
+					ptr[(4 * c + r)] = mat.c;
 				}
 			} else if (r == 1) {
 				if (c == 0) {
-					ptr[(4 * c + r)] = so3.d;
+					ptr[(4 * c + r)] = mat.d;
 				} else if (c == 1) {
-					ptr[(4 * c + r)] = so3.e;
+					ptr[(4 * c + r)] = mat.e;
 				} else {
-					ptr[(4 * c + r)] = so3.f;
+					ptr[(4 * c + r)] = mat.f;
 				}
 			} else {
 				if (c == 0) {
-					ptr[(4 * c + r)] = so3.g;
+					ptr[(4 * c + r)] = mat.g;
 				} else if (c == 1) {
-					ptr[(4 * c + r)] = so3.h;
+					ptr[(4 * c + r)] = mat.h;
 				} else {
-					ptr[(4 * c + r)] = so3.i;
+					ptr[(4 * c + r)] = mat.i;
 				}
 			}
 

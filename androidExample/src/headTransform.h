@@ -12,7 +12,7 @@ class headTransform {
 public:
 	headTransform();
 	virtual ~headTransform();
-	ofMatrix4x4 getHeadView();
+	ofMatrix4x4 & getHeadView();
 	void setMatrix(ofMatrix4x4 mat);
 	void getTranslation(vector<float>& translation, int offset);
 	void getForwardVector(vector<float>& forward, int offset);
