@@ -42,7 +42,7 @@ public:
 		if (k == 2)
 			result.z = 1;
 
-		result = result.cross(v);
+		result = result.getCrossed(v);
 		result.normalize();
 	}
 
@@ -65,7 +65,7 @@ public:
 	}
 
 	void sO3FromTwoVec(ofVec3f a, ofVec3f b, ofMatrix3x3 & result) {
-		sO3FromTwoVecN = a.cross(b);
+		sO3FromTwoVecN = a.getCrossed(b);
 		if (sO3FromTwoVecN.length() == 0.0) {
 			float dot = a.dot(b);
 			if (dot >= 0.0) {
@@ -91,7 +91,7 @@ public:
 		r1.d = sO3FromTwoVecN.x;
 		r1.e = sO3FromTwoVecN.y;
 		r1.f = sO3FromTwoVecN.z;
-		temp31 = sO3FromTwoVecN.cross(sO3FromTwoVecA);
+		temp31 = sO3FromTwoVecN.getCrossed(sO3FromTwoVecA);
 		r1.g = temp31.x;
 		r1.h = temp31.y;
 		r1.i = temp31.z;
@@ -103,7 +103,7 @@ public:
 		r2.d = sO3FromTwoVecN.x;
 		r2.e = sO3FromTwoVecN.y;
 		r2.f = sO3FromTwoVecN.z;
-		temp31 = sO3FromTwoVecB.cross(sO3FromTwoVecN);
+		temp31 = sO3FromTwoVecB.getCrossed(sO3FromTwoVecN);
 		r2.g = temp31.x;
 		r2.h = temp31.y;
 		r2.i = temp31.z;

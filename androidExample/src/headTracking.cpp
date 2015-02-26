@@ -17,15 +17,15 @@ headTracking::~headTracking() {
 
 void headTracking::setup() {
     mTmpHeadView.assign(16, 0.0);
-    mEkfToHeadTracker.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-    ofQuaternion rotation = ofQuaternion(90, 1, 0, 0);
-    mEkfToHeadTracker.setRotate(rotation);
+    mEkfToHeadTracker;
+    ofQuaternion rotation = ofQuaternion(0.0, ofVec3f(0, 1, 0), -90.0, ofVec3f(1, 0, 0), 0.0, ofVec3f(0, 0, 1));
+    mEkfToHeadTracker.makeRotationMatrix(rotation);
     mTracker.reset();
 //	ofxAccelerometer.setup();
 //	ofxRegisterAccelEvents(this);
 }
 
-ofMatrix4x4 headTracking::getLastHeadView(ofMatrix4x4 &  headView) {
+ofMatrix4x4 headTracking::getLastHeadView(ofMatrix4x4  headView) {
 //	ofLog() << "headTracking getLastHeadView" << endl;
 	float secondsSinceLastGyroEvent = (ofGetElapsedTimeMicros()
 			- mLastGyroEventTimeNanos) * 0.0000000001;
@@ -33,14 +33,8 @@ ofMatrix4x4 headTracking::getLastHeadView(ofMatrix4x4 &  headView) {
 	float secondsToPredictForward = secondsSinceLastGyroEvent
 			+ 0.03333333333333333;
 	ofMatrix4x4 mat = mTracker.getPredictedGLMatrix(secondsToPredictForward);
-	for (int i = 0; i < mTmpHeadView.size(); i++) {
-		mTmpHeadView[i] = mat.getPtr()[i];
-	}
-    
-    ofMatrix4x4 rotationMatrix = ofMatrix4x4(mTmpHeadView[0], mTmpHeadView[1], mTmpHeadView[2], mTmpHeadView[3], mTmpHeadView[4], mTmpHeadView[5], mTmpHeadView[6], mTmpHeadView[7], mTmpHeadView[8], mTmpHeadView[9], mTmpHeadView[10], mTmpHeadView[11], mTmpHeadView[12], mTmpHeadView[13], mTmpHeadView[14], mTmpHeadView[15]);
-
-	mEkfToHeadTracker = headView * rotationMatrix;
-	return mEkfToHeadTracker;
+	headView.makeFromMultiplicationOf(mat, mEkfToHeadTracker);
+	return headView;
 }
 
 void headTracking::accelerationChanged(SensorEvent & event) {

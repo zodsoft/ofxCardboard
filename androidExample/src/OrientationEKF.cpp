@@ -264,7 +264,7 @@ void OrientationEKF::processMag(ofVec3f mag, long sensorTimeStamp) {
 
 		processMagTempM4 = mK * mH;
 		processMagTempM5.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
-		processMagTempM5 -= processMagTempM4;
+		processMagTempM5 = processMagTempM5-processMagTempM4;
 		processMagTempM4 = processMagTempM5 * mP;
 		mP = processMagTempM4;
 
@@ -307,7 +307,7 @@ ofMatrix4x4 OrientationEKF::getPredictedGLMatrix(
 	return glMatrixFromSo3(so3PredictedState);
 }
 
-ofMatrix4x4 OrientationEKF::glMatrixFromSo3(ofMatrix3x3 & mat) {
+ofMatrix4x4 OrientationEKF::glMatrixFromSo3(ofMatrix3x3 mat) {
 
     vector<float> ptr;
     ptr.resize(16);
@@ -351,6 +351,8 @@ ofMatrix4x4 OrientationEKF::glMatrixFromSo3(ofMatrix3x3 & mat) {
 	ptr[15] = 1.0;
 
     ofMatrix4x4 rotationMatrix = ofMatrix4x4(ptr[0], ptr[1], ptr[2], ptr[3], ptr[4], ptr[5], ptr[6], ptr[7], ptr[8], ptr[9], ptr[10], ptr[11], ptr[12], ptr[13], ptr[14], ptr[15]);
+    
+//    ofLog()<<ofToString(rotationMatrix, 5)<<endl;
     
 	return rotationMatrix;
 }

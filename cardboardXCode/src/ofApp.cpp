@@ -23,14 +23,14 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     SensorEvent gyro;
-    gyro.reading.set(sin(ofGetElapsedTimef()), 0, 0);
+    gyro.reading.set(sin(ofGetElapsedTimef()), sin(ofGetElapsedTimef()), sin(ofGetElapsedTimef()));
     gyro.timestamp = ofGetElapsedTimeMillis();
     gyro.type = GYRO;
     tracking.processSensorEvent(gyro);
     
     
     SensorEvent accel;
-    accel.reading.set(9.8, 0, 0);
+    accel.reading.set(cos(ofGetElapsedTimef())*9.8, sin(ofGetElapsedTimef()), sin(ofGetElapsedTimef()));
     accel.timestamp = ofGetElapsedTimeMillis();
     accel.type = ACCEL;
     tracking.processSensorEvent(accel);
@@ -38,27 +38,41 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+    ofMatrix4x4 view = tracking.getLastHeadView(transform.getHeadView());
+    transform.setMatrix(view);
+    ofSetColor(255, 0, 255);
+    ofDrawBitmapString(ofToString(transform.getHeadView(), 20), 100, 200);
+    ofDrawBitmapString(ofToString(tracking.mTracker.getLastGyro()), 100, 400);
+    ofDrawBitmapString(ofToString(tracking.mTracker.getLastAccel()), 100, 500);
+    
+    //	float aspectRatio = screen.getWidth() / screen.getHeight();
+    //	Matrix.perspectiveM(mMonocular.getTransform().getPerspective(), 0, cdp.getFovY(), aspectRatio, mZNear, mZFar);
+    
+    ofMatrix4x4 perspective;
+    perspective.makePerspectiveMatrix(65.0, ofGetWidth() / ofGetHeight(), 0,
+                                      1000);
+    ofPushView();
+    ofViewport(ofRectangle(0, 0, ofGetWidth(), ofGetHeight()));
     ofPushMatrix();
-    ofMatrix4x4 foo;
-    foo = tracking.getLastHeadView(transform.getHeadView());
-    transform.setMatrix(foo);
-
-    ofLog()<<ofToString(transform.getHeadView(), 20)<<endl;
-    //	glPushMatrix();
-    //	glMatrixMode(GL_PROJECTION);
-    //	glPushMatrix();
-    //	glMatrixMode(GL_MODELVIEW);
-    //	glMultMatrixf((GLfloat*)transform.getHeadView().getPtr());
-    ofSetColor(0, 0, 0);
-//    ofDrawBitmapString(ofToString(foo, 40), 100, 200);
-//    ofDrawBitmapString(ofToString(tracking.mTracker.getLastGyro()), 100, 400);
-//    ofDrawBitmapString(ofToString(tracking.mTracker.getLastAccel()), 100, 500);
-    //	glPopMatrix();
-    //	glMatrixMode(GL_PROJECTION);
-    //	glPopMatrix();
-    //	glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    ofSetMatrixMode(OF_MATRIX_PROJECTION);
+    ofLoadIdentityMatrix();
+    ofLoadMatrix(perspective);
+    ofSetMatrixMode(OF_MATRIX_MODELVIEW);
+    ofLoadIdentityMatrix();
+    ofLoadMatrix( ( view ));
+    ofSetColor(255, 255, 0);
+    ofDrawBox(0, 0, 0, 10, 10, 10);
+    
+    glPopMatrix();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
     ofPopMatrix();
-}
+    ofPopView();}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){

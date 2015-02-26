@@ -26,7 +26,7 @@ public:
 
 private:
 	void mult(ofMatrix3x3 a, ofVec3f v, ofVec3f& result);
-	ofMatrix4x4 glMatrixFromSo3(ofMatrix3x3 & so3);
+	ofMatrix4x4 glMatrixFromSo3(ofMatrix3x3 so3);
 	void filterGyroTimestep(float timeStep);
 	void updateCovariancesAfterMotion();
 	void accObservationFunctionForNumericalJacobian(

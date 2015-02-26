@@ -22,22 +22,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "src/ofApp.cpp"
-            timestampString = "446595376.677949"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "42"
-            endingLineNumber = "42"
-            landmarkName = "ofApp::draw()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
@@ -90,12 +74,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../androidExample/src/OrientationEKF.cpp"
-            timestampString = "446600274.813015"
+            timestampString = "446609030.661761"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "311"
             endingLineNumber = "311"
-            landmarkName = "OrientationEKF::glMatrixFromSo3(ofMatrix3x3 &amp; mat)"
+            landmarkName = "OrientationEKF::glMatrixFromSo3(ofMatrix3x3 mat)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -106,12 +90,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../androidExample/src/OrientationEKF.cpp"
-            timestampString = "446600274.813015"
+            timestampString = "446609030.661761"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "353"
             endingLineNumber = "353"
-            landmarkName = "OrientationEKF::glMatrixFromSo3(ofMatrix3x3 &amp; mat)"
+            landmarkName = "OrientationEKF::glMatrixFromSo3(ofMatrix3x3 mat)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -122,76 +106,28 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../androidExample/src/headTracking.cpp"
-            timestampString = "446593506.293852"
+            timestampString = "446610453.518828"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "37"
-            endingLineNumber = "37"
-            landmarkName = "headTracking::getLastHeadView(ofMatrix4x4 &amp; headView)"
+            startingLineNumber = "35"
+            endingLineNumber = "35"
+            landmarkName = "headTracking::getLastHeadView(ofMatrix4x4 headView)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "No"
+            shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../androidExample/src/headTracking.cpp"
-            timestampString = "446593630.90923"
+            timestampString = "446610453.518828"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "40"
-            endingLineNumber = "40"
-            landmarkName = "headTracking::getLastHeadView(ofMatrix4x4 &amp; headView)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../androidExample/src/headTracking.cpp"
-            timestampString = "446593678.4156"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "42"
-            endingLineNumber = "42"
-            landmarkName = "headTracking::getLastHeadView(ofMatrix4x4 &amp; headView)"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "src/ofApp.cpp"
-            timestampString = "446600068.677057"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "45"
-            endingLineNumber = "45"
-            landmarkName = "ofApp::draw()"
-            landmarkType = "5">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../androidExample/src/headTracking.cpp"
-            timestampString = "446594171.520748"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "41"
-            endingLineNumber = "41"
-            landmarkName = "headTracking::getLastHeadView(ofMatrix4x4 &amp; headView)"
+            startingLineNumber = "34"
+            endingLineNumber = "34"
+            landmarkName = "headTracking::getLastHeadView(ofMatrix4x4 headView)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
@@ -202,7 +138,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../androidExample/src/OrientationEKF.cpp"
-            timestampString = "446600274.813015"
+            timestampString = "446609030.661761"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "294"
@@ -218,7 +154,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../androidExample/src/OrientationEKF.cpp"
-            timestampString = "446600274.813015"
+            timestampString = "446609030.661761"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "304"
@@ -234,12 +170,28 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../androidExample/src/OrientationEKF.cpp"
-            timestampString = "446600274.813015"
+            timestampString = "446609030.661761"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "344"
             endingLineNumber = "344"
-            landmarkName = "OrientationEKF::glMatrixFromSo3(ofMatrix3x3 &amp; mat)"
+            landmarkName = "OrientationEKF::glMatrixFromSo3(ofMatrix3x3 mat)"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../androidExample/src/headTracking.cpp"
+            timestampString = "446610453.518828"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "33"
+            endingLineNumber = "33"
+            landmarkName = "headTracking::getLastHeadView(ofMatrix4x4 headView)"
             landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>

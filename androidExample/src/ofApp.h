@@ -38,6 +38,9 @@ class ofApp : public ofxAndroidApp{
 		ofTrueTypeFont font;
 		headTracking tracking;
 		headTransform transform;
+
+		ofCamera cam;
+		ofSpherePrimitive planet;
 };
 
 #endif	
