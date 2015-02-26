@@ -41,6 +41,10 @@ class ofApp : public ofxAndroidApp{
 
 		ofCamera cam;
 		ofSpherePrimitive planet;
+
+		ofNode node;
+		ofEasyCam easycam;
+		ofMatrix4x4 view;
 };
 
 #endif	

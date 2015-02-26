@@ -22,4 +22,8 @@ class ofApp : public ofBaseApp{
 		
     headTracking tracking;
     headTransform transform;
+    ofEasyCam easycam;
+    ofCamera  cam;
+    ofNode node;
+    ofMatrix4x4 view;
 };

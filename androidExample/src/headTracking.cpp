@@ -17,17 +17,16 @@ headTracking::~headTracking() {
 
 void headTracking::setup() {
     mTmpHeadView.assign(16, 0.0);
-    mEkfToHeadTracker;
-    ofQuaternion rotation = ofQuaternion(0.0, ofVec3f(0, 1, 0), -90.0, ofVec3f(1, 0, 0), 0.0, ofVec3f(0, 0, 1));
+    ofQuaternion rotation = ofQuaternion(180.0, ofVec3f(0, 1, 0), 180.0, ofVec3f(1, 0, 0), 0, ofVec3f(0, 0, 1));
     mEkfToHeadTracker.makeRotationMatrix(rotation);
     mTracker.reset();
-//	ofxAccelerometer.setup();
-//	ofxRegisterAccelEvents(this);
+	ofxAccelerometer.setup();
+	ofxRegisterAccelEvents(this);
 }
 
 ofMatrix4x4 headTracking::getLastHeadView(ofMatrix4x4  headView) {
 //	ofLog() << "headTracking getLastHeadView" << endl;
-	float secondsSinceLastGyroEvent = (ofGetElapsedTimeMicros()
+	float secondsSinceLastGyroEvent = (ofGetElapsedTimeMillis()
 			- mLastGyroEventTimeNanos) * 0.0000000001;
 
 	float secondsToPredictForward = secondsSinceLastGyroEvent
@@ -46,7 +45,7 @@ void headTracking::gyroChanged(SensorEvent & event) {
 }
 
 void headTracking::processSensorEvent(SensorEvent event) {
-	long timeNanos = ofGetElapsedTimeMicros();
+	long timeNanos = ofGetElapsedTimeMillis();
 	mTmpRotatedEvent.x = (-event.reading.y);
 	mTmpRotatedEvent.y = event.reading.x;
 	mTmpRotatedEvent.z = event.reading.z;
