@@ -52,7 +52,7 @@ void headTransform::getRightVector(vector<float> &right, int offset)
 	right[(i + offset)] = mHeadView.getPtr()[i];
 }
 
-ofQuaternion headTransform::getQuaternion(int offset)
+ofQuaternion headTransform::getQuaternion()
 {
     mQuaternion.set(mHeadView);
 //    float * ptr = mat.getPtr();

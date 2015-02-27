@@ -82,7 +82,7 @@ void OrientationEKF::processGyro(ofVec3f gyro, long sensorTimeStamp) {
 	float kdTdefault = 0.01;
 	if (sensorTimeStampGyro != 0) {
 		float dT = (float) (sensorTimeStamp - sensorTimeStampGyro)
-				* 0.0000000001;
+				* 1e-6;
 		if (dT > kTimeThreshold)
 			dT = gyroFilterValid ? filteredGyroTimestep : kdTdefault;
 		else {
@@ -99,14 +99,14 @@ void OrientationEKF::processGyro(ofVec3f gyro, long sensorTimeStamp) {
 		updateCovariancesAfterMotion();
 
 		processGyroTempM2 = mQ;
-		processGyroTempM2 *= dT * dT;
+		processGyroTempM2 = processGyroTempM2*(dT * dT);
 		mP += processGyroTempM2;
 	}
 	sensorTimeStampGyro = sensorTimeStamp;
 	lastGyro = gyro;
 }
 
-void OrientationEKF::mult(ofMatrix3x3 a, ofVec3f v, ofVec3f& result) {
+void OrientationEKF::mult(ofMatrix3x3& a, ofVec3f& v, ofVec3f& result) {
 	float x = a.a * v.x + a.b * v.y + a.c * v.z;
 	float y = a.d * v.x + a.e * v.y + a.f * v.z;
 	float z = a.g * v.x + a.h * v.y + a.i * v.z;
@@ -121,9 +121,10 @@ void OrientationEKF::processAcc(ofVec3f acc, long sensorTimeStamp) {
 	if (sensorTimeStampAcc != 0) {
 		accObservationFunctionForNumericalJacobian(so3SensorFromWorld, mNu);
 
-		float eps = 1.0E-07f;
+		float eps = 1e-6;
 		for (int dof = 0; dof < 3; dof++) {
 			ofVec3f delta = processAccVDelta;
+			delta.set(0, 0, 0);
 			if (dof == 0)
 				delta.x = eps;
 			else if (dof == 1)
@@ -140,7 +141,7 @@ void OrientationEKF::processAcc(ofVec3f acc, long sensorTimeStamp) {
 			ofVec3f withDelta = processAccTempV1;
 
 			processAccTempV2 = mNu - withDelta;
-			processAccTempV2 *= (1.0 / eps);
+			processAccTempV2 = processAccTempV2*(1.0 / eps);
 			if (dof == 0) {
 				mH.a = processMagTempV2.x;
 				mH.d = processMagTempV2.y;
@@ -378,7 +379,7 @@ void OrientationEKF::updateCovariancesAfterMotion() {
 	updateCovariancesAfterMotionTempM2 = mP
 			* updateCovariancesAfterMotionTempM1;
 	mP = so3LastMotion * updateCovariancesAfterMotionTempM2;
-	so3LastMotion.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
+//	so3LastMotion.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
 }
 void OrientationEKF::accObservationFunctionForNumericalJacobian(
 		ofMatrix3x3 so3SensorFromWorldPred, ofVec3f & result) {
@@ -389,7 +390,7 @@ void OrientationEKF::accObservationFunctionForNumericalJacobian(
 
 }
 void OrientationEKF::magObservationFunctionForNumericalJacobian(
-		ofMatrix3x3 so3SensorFromWorldPred, ofVec3f & result) {
+		ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f & result) {
 	mult(so3SensorFromWorldPred, north, mh);
 	So3.sO3FromTwoVec(mh, mz, magObservationFunctionForNumericalJacobianTempM);
 

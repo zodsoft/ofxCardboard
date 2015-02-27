@@ -18,7 +18,7 @@ public:
 	void getForwardVector(vector<float>& forward, int offset);
 	void getUpVector(vector<float>& up, int offset);
 	void getRightVector(vector<float> &right, int offset);
-	ofQuaternion getQuaternion(int offset);
+	ofQuaternion getQuaternion();
 	ofVec3f getEulerAngles();
 private:
 	ofMatrix4x4 mHeadView;

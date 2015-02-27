@@ -29,7 +29,7 @@ public:
 	ofVec3f muFromSO3R2;
 	ofVec3f rotationPiAboutAxisTemp;
 
-	void ortho(ofVec3f v, ofVec3f & result) {
+	void ortho(ofVec3f& v, ofVec3f & result) {
 		int k = largestAbsComponent(v) - 1.0;
 		if (k < 0) {
 			k = 2;
@@ -64,7 +64,7 @@ public:
 		return 2;
 	}
 
-	void sO3FromTwoVec(ofVec3f a, ofVec3f b, ofMatrix3x3 & result) {
+	void sO3FromTwoVec(ofVec3f& a, ofVec3f& b, ofMatrix3x3 & result) {
 		sO3FromTwoVecN = a.getCrossed(b);
 		if (sO3FromTwoVecN.length() == 0.0) {
 			float dot = a.dot(b);
@@ -80,9 +80,9 @@ public:
 		sO3FromTwoVecA.set(a);
 		sO3FromTwoVecB.set(b);
 
-		sO3FromTwoVecN.normalize();
-		sO3FromTwoVecA.normalize();
-		sO3FromTwoVecB.normalize();
+		sO3FromTwoVecN = sO3FromTwoVecN.normalize();
+		sO3FromTwoVecA = sO3FromTwoVecA.normalize();
+		sO3FromTwoVecB = sO3FromTwoVecB.normalize();
 
 		ofMatrix3x3 r1 = sO3FromTwoVec33R1;
 		r1.a = sO3FromTwoVecA.x;
@@ -114,8 +114,7 @@ public:
 
 	void rotationPiAboutAxis(ofVec3f v, ofMatrix3x3 & result) {
 		rotationPiAboutAxisTemp.set(v);
-		rotationPiAboutAxisTemp.scale(
-				3.141592653589793 / rotationPiAboutAxisTemp.length());
+		rotationPiAboutAxisTemp*=(3.141592653589793 / rotationPiAboutAxisTemp.length());
 		float invTheta = 0.3183098861837907;
 
 		float kA = 0.0;
@@ -124,7 +123,7 @@ public:
 		roriguesSo3Exp(rotationPiAboutAxisTemp, kA, kB, result);
 	}
 
-	void sO3FromMu(ofVec3f w, ofMatrix3x3 & result) {
+	void sO3FromMu(ofVec3f & w, ofMatrix3x3 & result) {
 		float thetaSq = w.dot(w);
 		float theta = sqrt(thetaSq);
 		float kA, kB;
@@ -146,7 +145,7 @@ public:
 		roriguesSo3Exp(w, kA, kB, result);
 	}
 
-	void muFromSO3(ofMatrix3x3 so3, ofVec3f & result) {
+	void muFromSO3(ofMatrix3x3 & so3, ofVec3f & result) {
 		float cosAngle = (so3.a + so3.e + so3.i - 1.0)* 0.5;
 
 		result.set((so3.h - so3.f) / 2.0,
@@ -186,7 +185,7 @@ public:
 		}
 	}
 
-	void roriguesSo3Exp(ofVec3f& w, float kA, float kB, ofMatrix3x3& result) {
+	void roriguesSo3Exp(ofVec3f& w, float& kA, float& kB, ofMatrix3x3& result) {
 		float wx2 = w.x * w.x;
 		float wy2 = w.y * w.y;
 		float wz2 = w.z * w.z;
@@ -213,18 +212,18 @@ public:
 	}
     
 
-	void generatorField(int i, ofMatrix3x3& pos, ofMatrix3x3& result) {
+	void generatorField(int& i, ofMatrix3x3& pos, ofMatrix3x3& result) {
         if(i == 0){
             result.a = 0;
-            result.d = pos.g;
+            result.d = -pos.g;
             result.g = pos.d;
         }else if(i == 1){
             result.d = 0;
-            result.g = pos.a;
+            result.g = -pos.a;
             result.a = pos.g;
         }else{
             result.g = 0;
-            result.a = pos.d;
+            result.a = -pos.d;
             result.d = pos.a;
         }
 	}

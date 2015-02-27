@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "headTracking.h"
 #include "headTransform.h"
+#include "ofxGameCamera.h"
 class ofApp : public ofBaseApp{
 
 	public:
@@ -23,7 +24,10 @@ class ofApp : public ofBaseApp{
     headTracking tracking;
     headTransform transform;
     ofEasyCam easycam;
-    ofCamera  cam;
+//    ofCamera  cam;
     ofNode node;
     ofMatrix4x4 view;
+    ofMatrix4x4 sum;
+    ofQuaternion curRot;
+    ofCamera cam;
 };

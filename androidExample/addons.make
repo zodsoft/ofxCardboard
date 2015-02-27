@@ -1,2 +1,4 @@
 ofxAndroid
 ofxAccelerometer
+ofxGameCamera
+ofxXmlSettings

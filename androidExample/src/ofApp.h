@@ -6,6 +6,7 @@
 #include "ofxAndroid.h"
 #include "headTracking.h"
 #include "headTransform.h"
+#include "ofxGameCamera.h"
 class ofApp : public ofxAndroidApp{
 	
 	public:
@@ -39,12 +40,14 @@ class ofApp : public ofxAndroidApp{
 		headTracking tracking;
 		headTransform transform;
 
-		ofCamera cam;
+		ofEasyCam cam;
 		ofSpherePrimitive planet;
 
 		ofNode node;
 		ofEasyCam easycam;
 		ofMatrix4x4 view;
+
+		ofQuaternion rot;
 };
 
 #endif	

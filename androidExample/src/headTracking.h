@@ -18,6 +18,7 @@ public:
     void processSensorEvent(SensorEvent event);
     void accelerationChanged(SensorEvent & event);
     void gyroChanged(SensorEvent & event);
+    void reset();
     OrientationEKF mTracker;
 private:
     ofMatrix4x4 mEkfToHeadTracker;

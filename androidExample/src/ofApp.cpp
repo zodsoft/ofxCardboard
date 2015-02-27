@@ -7,23 +7,24 @@ void ofApp::setup() {
 	ofSetVerticalSync(false);
 	tracking.setup();
 	planet.setUseVbo(false);
-	planet.set(10, 100);
+	planet.set(1000, 100);
 	planet.setPosition(0, 0, 0);
 //	ofLog() << "setup" << endl;
 
-//    easycam.setDistance(200);
-    cam.setNearClip(0);
-    cam.setFarClip(1000);
-    cam.setPosition(ofVec3f(0, 0, 200));
+   easycam.setDistance(20);
+   cam.setPosition(0, 0, 0);
 }
 
 //--------------------------------------------------------------
 void ofApp::update() {
 //	ofLog() << "update" << endl;
+
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
+	ofBackground(0, 0, 0);
+	ofDrawBitmapStringHighlight("Rot :"+ofToString(view.getRotate()), 10, 500);
     view = tracking.getLastHeadView(transform.getHeadView());
     transform.setMatrix(view);
     ofSetColor(255, 0, 255);
@@ -31,30 +32,56 @@ void ofApp::draw() {
     ofDrawBitmapStringHighlight("Gyro :" + ofToString(tracking.mTracker.getLastGyro()), 10, 200);
     ofDrawBitmapStringHighlight("Accel :"+ofToString(tracking.mTracker.getLastAccel()), 10, 300);
 
+//    view = node.getLocalTransformMatrix()*view;
+    rot *= transform.getQuaternion();
 
-    cam.lookAt(ofVec3f(0, 0, 0), ofVec3f(0, 1, 0));
-    cam.setPosition(0, 0, -500);
-    ofMatrix4x4 foo;
-    foo.makeFromMultiplicationOf(cam.getGlobalTransformMatrix(), node.getGlobalTransformMatrix());
-    cam.setTransformMatrix(foo);
+    node.setOrientation(transform.getQuaternion());
+    cam.setTransformMatrix(view.getInverse());
 
-    ofDrawBitmapStringHighlight("ofCamera ProjectionMatrix * HeadViewMatrix", ofGetWidth()-ofGetHeight(), ofGetHeight()/2-20);
+//    cam.setOrientation(rot*cam.getOrientationQuat());
+
+
+    ofSetColor(255, 0, 255);
+    ofDrawBitmapStringHighlight("HeadView: "+ofToString(transform.getHeadView(), 10), 10, 100);
+    ofDrawBitmapStringHighlight("Gyro :" + ofToString(tracking.mTracker.getLastGyro()), 10, 200);
+    ofDrawBitmapStringHighlight("Accel :"+ofToString(tracking.mTracker.getLastAccel()), 10, 300);
+    ofDrawBitmapStringHighlight("Rot :"+ofToString(view.getRotate()), 10, 400);
+
+    ofDrawBitmapStringHighlight("Cardboard Camera", ofGetWidth()-ofGetHeight(), ofGetHeight()/2-20);
     cam.begin(ofRectangle(ofGetWidth()-ofGetHeight(), ofGetHeight()/2, ofGetHeight()/2, ofGetHeight()/2));
+    ofSetColor(255, 0, 255);
+    ofPushMatrix();
+    ofVec3f axis;
+    float angle;
+    rot.getRotate(angle, axis);
+	ofRotate(angle, axis.x, axis.y, axis.z);
+    planet.drawWireframe();
     ofSetColor(255, 255, 0);
-    node.draw();
-    planet.draw();
+    ofDrawBox(50, 0, 0, 10, 10, 10);
+    ofDrawBox(0, 50, 0, 10, 10, 10);
+    ofDrawBox(0, 0, 50, 10, 10, 10);
+    ofDrawBox(0, 50, 50, 10, 10, 10);
+    ofDrawBox(50, 50, 50, 10, 10, 10);
+
+    ofDrawBox(-50, 0, 0, 10, 10, 10);
+    ofDrawBox(0, -50, 0, 10, 10, 10);
+    ofDrawBox(0, 0, -50, 10, 10, 10);
+    ofDrawBox(0, -50, -50, 10, 10, 10);
+    ofDrawBox(-50, -50, -50, 10, 10, 10);
+    ofPopMatrix();
     cam.end();
 
-
     ofDrawBitmapStringHighlight("EasyCam View", ofGetWidth()-ofGetHeight()/2, ofGetHeight()/2-20);
-    node.setTransformMatrix(view);
-    easycam.lookAt(node, ofVec3f(0, 1, 0));
+    easycam.lookAt(node);
     easycam.begin(ofRectangle(ofGetWidth()-ofGetHeight()/2, ofGetHeight()/2, ofGetHeight()/2, ofGetHeight()/2));
     node.draw();
-    cam.draw();
     easycam.end();
 
 
+    easycam.lookAt(cam);
+    easycam.begin(ofRectangle(ofGetWidth()-ofGetHeight()/2, 0, ofGetHeight()/2, ofGetHeight()/2));
+    cam.draw();
+    easycam.end();
 }
 
 //--------------------------------------------------------------
@@ -83,7 +110,8 @@ void ofApp::touchMoved(int x, int y, int id) {
 
 //--------------------------------------------------------------
 void ofApp::touchUp(int x, int y, int id) {
-	tracking.setup();
+	tracking.reset();
+	view = ofMatrix4x4();
 }
 
 //--------------------------------------------------------------
@@ -118,8 +146,9 @@ void ofApp::resume() {
 
 //--------------------------------------------------------------
 void ofApp::reloadTextures() {
-	planet.set(10, 100);
-	planet.setPosition(0, 0, 0);
+	planet.setUseVbo(false);
+	planet.set(100, 10);
+	planet.setPosition(0, 0, -25);
 }
 
 //--------------------------------------------------------------
