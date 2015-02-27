@@ -25,14 +25,14 @@ public:
 	ofMatrix4x4 getPredictedGLMatrix(float secondsAfterLastGyroEvent);
 
 private:
-	void mult(ofMatrix3x3 a, ofVec3f v, ofVec3f& result);
+	void mult(ofMatrix3x3& a, ofVec3f& v, ofVec3f& result);
 	ofMatrix4x4 glMatrixFromSo3(ofMatrix3x3 so3);
 	void filterGyroTimestep(float timeStep);
 	void updateCovariancesAfterMotion();
 	void accObservationFunctionForNumericalJacobian(
-			ofMatrix3x3 so3SensorFromWorldPred, ofVec3f& result);
+			ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f& result);
 	void magObservationFunctionForNumericalJacobian(
-			ofMatrix3x3 so3SensorFromWorldPred, ofVec3f& result);
+			ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f& result);
 	void arrayAssign(vector<vector<float> > data, ofMatrix3x3 m);
 
 	ofMatrix3x3 so3SensorFromWorld;

@@ -382,7 +382,7 @@ void OrientationEKF::updateCovariancesAfterMotion() {
 //	so3LastMotion.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
 }
 void OrientationEKF::accObservationFunctionForNumericalJacobian(
-		ofMatrix3x3 so3SensorFromWorldPred, ofVec3f & result) {
+		ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f & result) {
 	mult(so3SensorFromWorldPred, down, mh);
 	So3.sO3FromTwoVec(mh, mz, accObservationFunctionForNumericalJacobianTempM);
 
@@ -395,7 +395,6 @@ void OrientationEKF::magObservationFunctionForNumericalJacobian(
 	So3.sO3FromTwoVec(mh, mz, magObservationFunctionForNumericalJacobianTempM);
 
 	So3.muFromSO3(magObservationFunctionForNumericalJacobianTempM, result);
-
 }
 ofVec3f OrientationEKF::getLastAccel() {
 	return mz;

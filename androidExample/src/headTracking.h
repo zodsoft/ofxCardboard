@@ -19,14 +19,30 @@ public:
     void accelerationChanged(SensorEvent & event);
     void gyroChanged(SensorEvent & event);
     void reset();
+    void setGyroBias(ofVec3f bias);
+    void setNeckModelEnabled(bool enable);
     OrientationEKF mTracker;
 private:
     ofMatrix4x4 mEkfToHeadTracker;
-    vector<float> mTmpHeadView;
+    ofMatrix4x4 mSensorToDisplay;
+    ofMatrix4x4 mNeckModelTranslation;
+    ofMatrix4x4 mTmpHeadView;
+    ofMatrix4x4 mTmpHeadView2;
+
     ofVec3f mTmpRotatedEvent;
+    ofVec3f mLatestGyro;
+    ofVec3f mLatestAcc;
+    ofVec3f mGyroBias;
+
+    float mDisplayRotation;
+    float DEFAULT_NECK_VERTICAL_OFFSET;
+    long mLastGyroEventTimeNanos;
+
+    bool DEFAULT_NECK_MODEL_ENABLED;
+    bool mNeckModelEnabled;
     bool mTracking;
 
-    long mLastGyroEventTimeNanos;
-};
+    float currentRotation;
 
+};
 
