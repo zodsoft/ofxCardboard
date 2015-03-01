@@ -1,12 +1,10 @@
-#ifndef _TEST_APP
-#define _TEST_APP
-
-
+#pragma once
 #include "ofMain.h"
 #include "ofxAndroid.h"
 #include "headTracking.h"
 #include "headTransform.h"
 #include "ofxGameCamera.h"
+#include "ofxAccelerometer.h"
 class ofApp : public ofxAndroidApp{
 	
 	public:
@@ -35,20 +33,26 @@ class ofApp : public ofxAndroidApp{
 		void okPressed();
 		void cancelPressed();
 
+		void accelerationChanged(SensorEvent & event);
+		void gyroChanged(SensorEvent & event);
 
+
+
+		SensorEvent gyroEvent;
+		SensorEvent accelEvent;
 		ofTrueTypeFont font;
 		headTracking tracking;
 		headTransform transform;
 
-		ofEasyCam cam;
+		ofCamera cam;
 		ofSpherePrimitive planet;
 
 		ofNode node;
+		ofNode invert;
 		ofEasyCam easycam;
 		ofMatrix4x4 view;
 
 		ofQuaternion rot;
 };
 
-#endif	
 

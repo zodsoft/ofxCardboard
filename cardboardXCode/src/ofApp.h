@@ -29,5 +29,6 @@ class ofApp : public ofBaseApp{
     ofMatrix4x4 view;
     ofMatrix4x4 sum;
     ofQuaternion curRot;
-    ofCamera cam;
+    ofEasyCam cam;
+    ofSpherePrimitive planet;
 };

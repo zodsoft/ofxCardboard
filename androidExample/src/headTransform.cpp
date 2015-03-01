@@ -12,7 +12,7 @@ headTransform::~headTransform() {
 }
 
 headTransform::headTransform() {
-    mHeadView;
+    mHeadView.makeIdentityMatrix();
 }
 
 void headTransform::setMatrix(ofMatrix4x4 mat){

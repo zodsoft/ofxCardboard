@@ -29,7 +29,7 @@ public:
 	ofVec3f muFromSO3R2;
 	ofVec3f rotationPiAboutAxisTemp;
 
-	void ortho(ofVec3f& v, ofVec3f & result) {
+	void ortho(ofVec3f v, ofVec3f & result) {
 		int k = largestAbsComponent(v) - 1.0;
 		if (k < 0) {
 			k = 2;
@@ -64,7 +64,7 @@ public:
 		return 2;
 	}
 
-	void sO3FromTwoVec(ofVec3f& a, ofVec3f& b, ofMatrix3x3 & result) {
+	void sO3FromTwoVec(ofVec3f a, ofVec3f b, ofMatrix3x3 & result) {
 		sO3FromTwoVecN = a.getCrossed(b);
 		if (sO3FromTwoVecN.length() == 0.0) {
 			float dot = a.dot(b);
@@ -82,7 +82,7 @@ public:
 
 		sO3FromTwoVecN = sO3FromTwoVecN.normalize();
 		sO3FromTwoVecA = sO3FromTwoVecA.normalize();
-		sO3FromTwoVecB = sO3FromTwoVecB.normalize();
+        sO3FromTwoVecB = sO3FromTwoVecB.normalize();
 
 		ofMatrix3x3 r1 = sO3FromTwoVec33R1;
 		r1.a = sO3FromTwoVecA.x;
@@ -112,7 +112,7 @@ public:
 		result =r2*r1;
 	}
 
-	void rotationPiAboutAxis(ofVec3f v, ofMatrix3x3 & result) {
+	void rotationPiAboutAxis(ofVec3f  v, ofMatrix3x3 & result) {
 		rotationPiAboutAxisTemp.set(v);
 		rotationPiAboutAxisTemp*=(3.141592653589793 / rotationPiAboutAxisTemp.length());
 		float invTheta = 0.3183098861837907;
@@ -120,10 +120,10 @@ public:
 		float kA = 0.0;
 
 		float kB = 0.2026423672846756;
-		roriguesSo3Exp(rotationPiAboutAxisTemp, kA, kB, result);
+		rodriguesSo3Exp(rotationPiAboutAxisTemp, kA, kB, result);
 	}
 
-	void sO3FromMu(ofVec3f & w, ofMatrix3x3 & result) {
+	void sO3FromMu(ofVec3f w, ofMatrix3x3 & result) {
 		float thetaSq = w.dot(w);
 		float theta = sqrt(thetaSq);
 		float kA, kB;
@@ -142,23 +142,37 @@ public:
 				kB = (1.0 - cos(theta)) * (invTheta * invTheta);
 			}
 		}
-		roriguesSo3Exp(w, kA, kB, result);
+		rodriguesSo3Exp(w, kA, kB, result);
 	}
 
-	void muFromSO3(ofMatrix3x3 & so3, ofVec3f & result) {
+	void muFromSO3(ofMatrix3x3 so3, ofVec3f & result) {
 		float cosAngle = (so3.a + so3.e + so3.i - 1.0)* 0.5;
+        if((cosAngle)==0.0){
+            
+        }
+            
 
 		result.set((so3.h - so3.f) / 2.0,
 				(so3.c - so3.g) / 2.0,
-				(so3.d - so3.a) / 2.0);
-
+				(so3.d - so3.b) / 2.0);
+        
 		float sinAngleAbs = result.length();
+        if((sinAngleAbs)==0.0){
+            
+        }
 		if (cosAngle > 0.7071067811865476) {
-			if (sinAngleAbs > 0.0)
-				result*=asin(sinAngleAbs) / sinAngleAbs;
-		} else if (cosAngle > -0.7071067811865476) {
+			if (sinAngleAbs > 0.0){
+				result.scale((asin(sinAngleAbs) / sinAngleAbs));
+                if(result != result){
+                    
+                }
+			}
+		} else if (cosAngle > -0.7071067811865476 && sinAngleAbs != 0) {
 			float angle = acos(cosAngle);
 			result*=(angle / sinAngleAbs);
+            if(result != result){
+                
+            }
 		} else {
 			float angle = 3.141592653589793 - asin(sinAngleAbs);
 			float a = so3.a - cosAngle;
@@ -167,25 +181,33 @@ public:
 
 			ofVec3f r2 = muFromSO3R2;
 			if ((a * a > b * b) && (a * a > c * c)) {
-				r2.set(0, (so3.d + so3.b) / 2.0,
+				r2.set(a, (so3.d + so3.b) / 2.0,
 						(so3.c + so3.g) / 2.0);
 			} else if (b * b > c * c) {
-				r2.set((so3.d + so3.b) / 2.0, 1,
-						(so3.h + so3.c) / 2.0);
+				r2.set((so3.d + so3.b) / 2.0, b,
+						(so3.h + so3.f) / 2.0);
 			} else {
-				r2.set((so3.d + so3.g) / 2.0,(so3.h + so3.c) / 2.0, 2.0);
+				r2.set((so3.c + so3.g) / 2.0,(so3.h + so3.f) / 2.0, c);
 			}
 
 			if (result.dot(r2) < 0.0) {
 				r2*=-1.0;
 			}
 			r2.normalize();
-			r2.scale(angle);
+            r2.scale(angle);
 			result.set(r2);
+            if(result != result){
+                
+            }
 		}
+//        cout<<"--"<<endl;
+//        cout<<"muFromSO3"<<endl;
+//        cout<<result<<endl;
+        
+
 	}
 
-	void roriguesSo3Exp(ofVec3f& w, float& kA, float& kB, ofMatrix3x3& result) {
+	void rodriguesSo3Exp(ofVec3f w, float kA, float kB, ofMatrix3x3& result) {
 		float wx2 = w.x * w.x;
 		float wy2 = w.y * w.y;
 		float wz2 = w.z * w.z;
@@ -212,7 +234,7 @@ public:
 	}
     
 
-	void generatorField(int& i, ofMatrix3x3& pos, ofMatrix3x3& result) {
+	void generatorField(int i, ofMatrix3x3 pos, ofMatrix3x3& result) {
         if(i == 0){
             result.a = 0;
             result.d = -pos.g;

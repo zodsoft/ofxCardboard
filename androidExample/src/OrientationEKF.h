@@ -24,16 +24,21 @@ public:
 	ofMatrix4x4 getGLMatrix();
 	ofMatrix4x4 getPredictedGLMatrix(float secondsAfterLastGyroEvent);
 
+	ofMatrix3x3 getRotationMatrix();
+	bool isAlignedToGravity();
+	bool isAlignedToNorth();
+
 private:
 	void mult(ofMatrix3x3& a, ofVec3f& v, ofVec3f& result);
 	ofMatrix4x4 glMatrixFromSo3(ofMatrix3x3 so3);
 	void filterGyroTimestep(float timeStep);
 	void updateCovariancesAfterMotion();
-	void accObservationFunctionForNumericalJacobian(
-			ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f& result);
-	void magObservationFunctionForNumericalJacobian(
-			ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f& result);
+    void accObservationFunctionForNumericalJacobian(
+                                                    ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f& result);
+    void magObservationFunctionForNumericalJacobian(
+                                                    ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f& result);
 	void arrayAssign(vector<vector<float> > data, ofMatrix3x3 m);
+	void updateAccelCovariance(float currentAccelNorm);
 
 	ofMatrix3x3 so3SensorFromWorld;
 	ofMatrix3x3 so3LastMotion;
@@ -65,6 +70,7 @@ private:
 	ofVec3f processAccTempV1;
 	ofVec3f processAccTempV2;
 	ofVec3f processAccVDelta;
+
 	ofVec3f processMagTempV1;
 	ofVec3f processMagTempV2;
 	ofVec3f processMagTempV3;
@@ -80,6 +86,9 @@ private:
 	ofMatrix3x3 accObservationFunctionForNumericalJacobianTempM;
 	ofMatrix3x3 magObservationFunctionForNumericalJacobianTempM;
 
+	bool alignedToGravity;
+	bool alignedToNorth;
+
 	long sensorTimeStampGyro;
 	long sensorTimeStampAcc;
 	long sensorTimeStampMag;
@@ -89,5 +98,10 @@ private:
 	int numGyroTimestepSamples;
 	bool gyroFilterValid;
 	So3Util So3;
+
+	float previousAccelNorm;
+
+	float movingAverageAccelNormChange;
+
 };
 

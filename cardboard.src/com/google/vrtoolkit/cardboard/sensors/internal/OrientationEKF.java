@@ -203,7 +203,7 @@
 /* 294 */     float kTimeThreshold = 0.04F;
 /* 295 */     float kdTdefault = 0.01F;
 /* 296 */     if (this.sensorTimeStampGyro != 0L) {
-/* 297 */       float dT = (float)(sensorTimeStamp - this.sensorTimeStampGyro) * 1.0E-09F;
+/* 297 */       float dT = (float)(sensorTimeStamp - this.sensorTimeStampGyro) * 1.0E-06F;
 /* 298 */       if (dT > 0.04F)
 /* 299 */         dT = this.gyroFilterValid ? this.filteredGyroTimestep : 0.01F;
 /*     */       else {
