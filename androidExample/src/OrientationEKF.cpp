@@ -39,11 +39,11 @@ void OrientationEKF::reset() {
 	mu = ofVec3f(0, 0, 0);
 	mx = ofVec3f(0, 0, 0);
 
-	down.set(9.810000000000001, 0.0, 0.0);
+	down.set(9.81, 0.0, 0.0);
 	north.set(0.0, 1.0, 0.0);
 
 	lastGyro.set(0, 0, 0);
-	previousAccelNorm = 0;
+	previousAccelNorm = down;
 
 	alignedToNorth = false;
 	alignedToGravity = false;
@@ -61,7 +61,7 @@ float OrientationEKF::getHeadingDegrees() {
 		return 0.0;
 	}
 
-	double heading = -90.0 - atan2(y, x) / 3.141592653589793 * 180.0;
+	double heading = -90.0 - atan2(y, x) / PI * 180.0;
 	if (heading < 0.0) {
 		heading += 360.0;
 	}
@@ -73,8 +73,8 @@ float OrientationEKF::getHeadingDegrees() {
 void OrientationEKF::setHeadingDegrees(float heading) {
 	float currentHeading = getHeadingDegrees();
 	float deltaHeading = heading - currentHeading;
-	float s = sin(deltaHeading / 180.0 * 3.141592653589793);
-	float c = cos(deltaHeading / 180.0 * 3.141592653589793);
+	float s = sin(deltaHeading / 180.0 * PI);
+	float c = cos(deltaHeading / 180.0 * PI);
 
 	ofMatrix3x3 setHeadingDegreesTempM1 = ofMatrix3x3(c, -s, 0.0, s, c, 0.0,
 			0.0, 0.0, 1.0);
@@ -85,7 +85,8 @@ void OrientationEKF::processGyro(ofVec3f gyro, long sensorTimeStamp) {
 	float kTimeThreshold = 0.04;
 	float kdTdefault = 0.01;
 	if (sensorTimeStampGyro != 0) {
-		float dT = (float) (sensorTimeStamp - sensorTimeStampGyro) * 1e-6;
+		float dT = (float) (sensorTimeStamp - sensorTimeStampGyro) * 1E-6;
+		//ofLog()<<dT<<endl;
 		if (dT > kTimeThreshold)
 			dT = gyroFilterValid ? filteredGyroTimestep : kdTdefault;
 		else {
@@ -109,7 +110,7 @@ void OrientationEKF::processGyro(ofVec3f gyro, long sensorTimeStamp) {
 	lastGyro = gyro;
 }
 
-void OrientationEKF::mult(ofMatrix3x3& a, ofVec3f& v, ofVec3f& result) {
+void OrientationEKF::mult(ofMatrix3x3 a, ofVec3f v, ofVec3f& result) {
 	float x = a.a * v.x + a.b * v.y + a.c * v.z;
 	float y = a.d * v.x + a.e * v.y + a.f * v.z;
 	float z = a.g * v.x + a.h * v.y + a.i * v.z;
@@ -120,11 +121,11 @@ void OrientationEKF::mult(ofMatrix3x3& a, ofVec3f& v, ofVec3f& result) {
 
 void OrientationEKF::processAcc(ofVec3f acc, long sensorTimeStamp) {
 	mz.set(acc.x, acc.y, acc.z);
-	updateAccelCovariance(mz.length());
+	updateAccelCovariance(mz);
 	if (alignedToGravity) {
 		accObservationFunctionForNumericalJacobian(so3SensorFromWorld, mNu);
 
-		float eps = 1.0E-07f;
+		float eps = 1.0E-6;
 		for (int dof = 0; dof < 3; dof++) {
 			ofVec3f delta = processAccVDelta;
 			delta.set(0, 0, 0);
@@ -144,7 +145,7 @@ void OrientationEKF::processAcc(ofVec3f acc, long sensorTimeStamp) {
 			ofVec3f withDelta = processAccTempV1;
 
 			processAccTempV2 = mNu - withDelta;
-			processAccTempV2 = processAccTempV2 * (1.0 / eps);
+			processAccTempV2.scale(1.0 / eps);
 			if (dof == 0) {
 				mH.a = processMagTempV2.x;
 				mH.d = processMagTempV2.y;
@@ -192,21 +193,25 @@ void OrientationEKF::processAcc(ofVec3f acc, long sensorTimeStamp) {
 	sensorTimeStampAcc = sensorTimeStamp;
 }
 
-void OrientationEKF::updateAccelCovariance(float currentAccelNorm) {
-	float currentAccelNormChange = abs(currentAccelNorm - previousAccelNorm);
+void OrientationEKF::updateAccelCovariance(ofVec3f currentAccelNorm) {
+	ofVec3f currentAccelNormChange = (currentAccelNorm - previousAccelNorm);
 	previousAccelNorm = currentAccelNorm;
 
-	float kSmoothingFactor = 0.5;
-	movingAverageAccelNormChange = ofLerp(movingAverageAccelNormChange, currentAccelNormChange, kSmoothingFactor);
+	float kSmoothingFactor = 0.9;
+	movingAverageAccelNormChange = movingAverageAccelNormChange
+			* (kSmoothingFactor)
+			+ currentAccelNormChange * (1 - kSmoothingFactor);
+	//ofLog() << "updateAccelCovariance movingAverageAccelNormChange "
+	//		<< movingAverageAccelNormChange.length() << endl;
+	kMaxAccelNormChange = 0.15;
 
-	float kMaxAccelNormChange = 0.15;
+	ofVec3f normChangeRatio = (movingAverageAccelNormChange)/ kMaxAccelNormChange;
 
-	float normChangeRatio = (movingAverageAccelNormChange) / kMaxAccelNormChange;
-	float accelNoiseSigma = min(7.0, (0.75 + normChangeRatio * 6.25));
+//	ofLog() << "updateAccelCovariance normChangeRatio "
+//			<< normChangeRatio.length() << endl;
 
-	mRaccel.set(accelNoiseSigma * accelNoiseSigma, 0, 0, 0,
-			accelNoiseSigma * accelNoiseSigma, 0, 0, 0,
-			accelNoiseSigma * accelNoiseSigma);
+	float length2 = min(7.0, 0.75 + normChangeRatio.length() * 6.25);
+	mRaccel.set(length2*length2, 0, 0, 0, length2*length2, 0, 0, 0, length2*length2);
 }
 
 void OrientationEKF::processMag(ofVec3f mag, long sensorTimeStamp) {
@@ -235,7 +240,7 @@ void OrientationEKF::processMag(ofVec3f mag, long sensorTimeStamp) {
 	if (alignedToNorth) {
 		magObservationFunctionForNumericalJacobian(so3SensorFromWorld, mNu);
 
-		float eps = 1.0E-07;
+		float eps = 1.0E-6;
 		for (int dof = 0; dof < 3; dof++) {
 			ofVec3f delta = processMagTempV3;
 			delta.set(0, 0, 0);
@@ -255,7 +260,7 @@ void OrientationEKF::processMag(ofVec3f mag, long sensorTimeStamp) {
 			ofVec3f withDelta = processMagTempV4;
 
 			processMagTempV5 = mNu - withDelta;
-			processMagTempV5 *= 1.0 / eps;
+			processMagTempV5 *= (1.0 / eps);
 
 			if (dof == 0) {
 				mH.a = processMagTempV5.x;
@@ -406,9 +411,9 @@ void OrientationEKF::filterGyroTimestep(float timeStep) {
 		timestepFilterInit = true;
 	} else {
 		filteredGyroTimestep = (kFilterCoeff * filteredGyroTimestep
-				+ 0.05000001 * timeStep);
-
-		if (++numGyroTimestepSamples > kMinSamples)
+				+ 0.05 * timeStep);
+		numGyroTimestepSamples++;
+		if (numGyroTimestepSamples > kMinSamples)
 			gyroFilterValid = true;
 	}
 
@@ -422,15 +427,13 @@ void OrientationEKF::updateCovariancesAfterMotion() {
 	so3LastMotion.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
 }
 void OrientationEKF::accObservationFunctionForNumericalJacobian(
-		ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f & result) {
+		ofMatrix3x3 so3SensorFromWorldPred, ofVec3f & result) {
 	mult(so3SensorFromWorldPred, down, mh);
 	So3.sO3FromTwoVec(mh, mz, accObservationFunctionForNumericalJacobianTempM);
-
 	So3.muFromSO3(accObservationFunctionForNumericalJacobianTempM, result);
-
 }
 void OrientationEKF::magObservationFunctionForNumericalJacobian(
-		ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f & result) {
+		ofMatrix3x3 so3SensorFromWorldPred, ofVec3f & result) {
 	mult(so3SensorFromWorldPred, north, mh);
 	So3.sO3FromTwoVec(mh, mz, magObservationFunctionForNumericalJacobianTempM);
 

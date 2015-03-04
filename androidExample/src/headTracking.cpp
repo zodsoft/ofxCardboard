@@ -50,11 +50,11 @@ ofMatrix4x4 headTracking::getLastHeadView(ofMatrix4x4 headView) {
 				ofQuaternion(0.0, ofVec3f(1, 0, 0), rotation, ofVec3f(0, 0, 1),
 						0.0, ofVec3f(0, 0, 1)));
 	}
-	float secondsSinceLastGyroEvent = (ofGetElapsedTimeMicros()
-			- mLastGyroEventTimeNanos) * 1e-6;
+	float secondsSinceLastGyroEvent = (ofGetElapsedTimeMicros() - mLastGyroEventTimeNanos)*1E-6;
 
-	float secondsToPredictForward = secondsSinceLastGyroEvent
-			+ 0.03333333333333333;
+
+	float secondsToPredictForward = secondsSinceLastGyroEvent+ 0.00005799999833106995;
+	//ofLog()<<"secondsToPredictForward "<<secondsToPredictForward<<endl;
 	mTmpHeadView = mTracker.getPredictedGLMatrix(secondsToPredictForward);
 	mTmpHeadView2.makeFromMultiplicationOf(mSensorToDisplay, mTmpHeadView);
 	headView.makeFromMultiplicationOf(mTmpHeadView2, mEkfToHeadTracker);
@@ -76,7 +76,7 @@ void headTracking::processSensorEvent(SensorEvent event) {
 	if (event.type == ACCEL) {
 		mLatestAcc = event.reading;
 		mTracker.processAcc(mLatestAcc, event.timestamp);
-		gyroBiasEstimator.processAccelerometer(event.reading, event.timestamp);
+		gyroBiasEstimator.processAccelerometer(mLatestAcc, event.timestamp);
 	} else if (event.type == GYRO) {
 		mLastGyroEventTimeNanos = event.timestamp;
 		mLatestGyro = event.reading;

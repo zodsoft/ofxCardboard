@@ -29,16 +29,16 @@ public:
 	bool isAlignedToNorth();
 
 private:
-	void mult(ofMatrix3x3& a, ofVec3f& v, ofVec3f& result);
+	void mult(ofMatrix3x3 a, ofVec3f v, ofVec3f& result);
 	ofMatrix4x4 glMatrixFromSo3(ofMatrix3x3 so3);
 	void filterGyroTimestep(float timeStep);
 	void updateCovariancesAfterMotion();
     void accObservationFunctionForNumericalJacobian(
-                                                    ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f& result);
+                                                    ofMatrix3x3  so3SensorFromWorldPred, ofVec3f& result);
     void magObservationFunctionForNumericalJacobian(
-                                                    ofMatrix3x3 & so3SensorFromWorldPred, ofVec3f& result);
+                                                    ofMatrix3x3  so3SensorFromWorldPred, ofVec3f& result);
 	void arrayAssign(vector<vector<float> > data, ofMatrix3x3 m);
-	void updateAccelCovariance(float currentAccelNorm);
+	void updateAccelCovariance(ofVec3f currentAccelNorm);
 
 	ofMatrix3x3 so3SensorFromWorld;
 	ofMatrix3x3 so3LastMotion;
@@ -99,9 +99,9 @@ private:
 	bool gyroFilterValid;
 	So3Util So3;
 
-	float previousAccelNorm;
+	ofVec3f previousAccelNorm;
 
-	float movingAverageAccelNormChange;
-
+	ofVec3f movingAverageAccelNormChange;
+	float kMaxAccelNormChange;
 };
 

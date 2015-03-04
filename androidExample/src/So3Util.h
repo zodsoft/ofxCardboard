@@ -114,8 +114,8 @@ public:
 
 	void rotationPiAboutAxis(ofVec3f  v, ofMatrix3x3 & result) {
 		rotationPiAboutAxisTemp.set(v);
-		rotationPiAboutAxisTemp*=(3.141592653589793 / rotationPiAboutAxisTemp.length());
-		float invTheta = 0.3183098861837907;
+		rotationPiAboutAxisTemp*=(PI/rotationPiAboutAxisTemp.length());
+//		float invTheta = 0.3183098861837907;
 
 		float kA = 0.0;
 

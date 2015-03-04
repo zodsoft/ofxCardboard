@@ -5,10 +5,11 @@ void ofApp::setup() {
 	ofSetOrientation(OF_ORIENTATION_90_LEFT);
 	ofSetLogLevel(OF_LOG_VERBOSE);
 	ofBackground(0, 0, 0);
-	ofSetVerticalSync(false);
+	ofSetVerticalSync(true);
+	ofSetFrameRate(60);
 
 	planet.setUseVbo(false);
-	planet.set(1000, 100);
+	planet.set(1500, 50);
 	planet.setPosition(0, 0, 0);
 //	ofLog() << "setup" << endl;
 
@@ -42,11 +43,11 @@ void ofApp::update() {
 void ofApp::draw() {
 
 	ofBackground(0, 0, 0);
-	ofDrawBitmapStringHighlight("Rot :" + ofToString(view.getRotate()), 10,
-			500);
+
 	ofMatrix4x4 headView;
 	headView.makeIdentityMatrix();
 	headView = tracking.getLastHeadView(transform.getHeadView());
+	ofDrawBitmapStringHighlight("Rot :" + ofToString(headView.getRotate()), 10,500);
 
 //    ofMatrix4x4 translate;
 //    translate.makeTranslationMatrix(ofVec3f(0.06, 0, 0));
@@ -57,11 +58,10 @@ void ofApp::draw() {
 
 	invert = node;
 	node.setTransformMatrix(headView);
-//	if(cam.getOrientationEuler().lengthSquared() - node.getLookAtDir().lengthSquared() != 0){
-		rot.slerp(0.5, invert.getOrientationQuat(), node.getOrientationQuat());
-		node.setOrientation(rot);
-		cam.setTransformMatrix(node.getGlobalTransformMatrix().getInverse());
-//	}
+
+	//rot.slerp(0.80, invert.getOrientationQuat(), node.getOrientationQuat());
+
+	rot = node.getOrientationQuat();
 
 	cam.setPosition(-0.6/2.0, 0, 0);
 //    cam.setOrientation(rot);
@@ -83,23 +83,23 @@ void ofApp::draw() {
 					ofGetWidth() / 2, ofGetHeight()));
 	ofSetColor(255, 0, 255);
 	ofPushMatrix();
-//    ofVec3f axis;
-//    float angle;
-//    rot.getRotate(angle, axis);
-//	ofRotate(angle, axis.x, axis.y, axis.z);
-	planet.drawWireframe();
+    ofVec3f axis;
+    float angle;
+    rot.getRotate(angle, axis);
+	ofRotate(angle, axis.x, axis.y, axis.z);
+	//planet.drawWireframe();
 	ofSetColor(255, 255, 0);
-	ofDrawBox(50, 0, 0, 10, 10, 10);
-	ofDrawBox(0, 50, 0, 10, 10, 10);
-	ofDrawBox(0, 0, 50, 10, 10, 10);
-	ofDrawBox(0, 50, 50, 10, 10, 10);
-	ofDrawBox(50, 50, 50, 10, 10, 10);
+	ofDrawBox(sin(ofGetElapsedTimef()*0.1231)*50, 0, 0, 10, 10, 10);
+	ofDrawBox(0, sin(ofGetElapsedTimef()*0.1231)*50, 0, 10, 10, 10);
+	ofDrawBox(0, 0, sin(ofGetElapsedTimef()*0.1231)*50, 10, 10, 10);
+	ofDrawBox(0, sin(ofGetElapsedTimef()*0.1231)*50, sin(ofGetElapsedTimef()*0.1231)*50, 10, 10, 10);
+	ofDrawBox(sin(ofGetElapsedTimef()*0.1231)*50, sin(ofGetElapsedTimef()*0.1231)*50, sin(ofGetElapsedTimef()*0.1231)*50, 10, 10, 10);
 
-	ofDrawBox(-50, 0, 0, 10, 10, 10);
-	ofDrawBox(0, -50, 0, 10, 10, 10);
-	ofDrawBox(0, 0, -50, 10, 10, 10);
-	ofDrawBox(0, -50, -50, 10, 10, 10);
-	ofDrawBox(-50, -50, -50, 10, 10, 10);
+	ofDrawBox(sin(ofGetElapsedTimef()*0.1231)*-50, 0, 0, 10, 10, 10);
+	ofDrawBox(0, sin(ofGetElapsedTimef()*0.1231)*-50, 0, 10, 10, 10);
+	ofDrawBox(0, 0, sin(ofGetElapsedTimef()*0.1231)*-50, 10, 10, 10);
+	ofDrawBox(0, sin(ofGetElapsedTimef()*0.1231)*-50, sin(ofGetElapsedTimef()*0.1231)*-50, 10, 10, 10);
+	ofDrawBox(sin(ofGetElapsedTimef()*0.1231)*-50, sin(ofGetElapsedTimef()*0.1231)*-50, sin(ofGetElapsedTimef()*0.1231)*-50, 10, 10, 10);
 	ofPopMatrix();
 	cam.end();
 
@@ -108,27 +108,25 @@ void ofApp::draw() {
 	cam.begin(
 				ofRectangle(ofGetWidth() / 2, 0,
 						ofGetWidth() / 2, ofGetHeight()));
-		ofSetColor(255, 0, 255);
-		ofPushMatrix();
-//	    ofVec3f axis;
-//	    float angle;
-//	    rot.getRotate(angle, axis);
-//		ofRotate(angle, axis.x, axis.y, axis.z);
-		planet.drawWireframe();
-		ofSetColor(255, 255, 0);
-		ofDrawBox(50, 0, 0, 10, 10, 10);
-		ofDrawBox(0, 50, 0, 10, 10, 10);
-		ofDrawBox(0, 0, 50, 10, 10, 10);
-		ofDrawBox(0, 50, 50, 10, 10, 10);
-		ofDrawBox(50, 50, 50, 10, 10, 10);
+	ofSetColor(255, 0, 255);
+	ofPushMatrix();
+    rot.getRotate(angle, axis);
+	ofRotate(angle, axis.x, axis.y, axis.z);
+	//planet.drawWireframe();
+//	ofSetColor(255, 255, 0);
+	ofDrawBox(sin(ofGetElapsedTimef()*0.1231)*50, 0, 0, 10, 10, 10);
+	ofDrawBox(0, sin(ofGetElapsedTimef()*0.1231)*50, 0, 10, 10, 10);
+	ofDrawBox(0, 0, sin(ofGetElapsedTimef()*0.1231)*50, 10, 10, 10);
+	ofDrawBox(0, sin(ofGetElapsedTimef()*0.1231)*50, sin(ofGetElapsedTimef()*0.1231)*50, 10, 10, 10);
+	ofDrawBox(sin(ofGetElapsedTimef()*0.1231)*50, sin(ofGetElapsedTimef()*0.1231)*50, sin(ofGetElapsedTimef()*0.1231)*50, 10, 10, 10);
 
-		ofDrawBox(-50, 0, 0, 10, 10, 10);
-		ofDrawBox(0, -50, 0, 10, 10, 10);
-		ofDrawBox(0, 0, -50, 10, 10, 10);
-		ofDrawBox(0, -50, -50, 10, 10, 10);
-		ofDrawBox(-50, -50, -50, 10, 10, 10);
-		ofPopMatrix();
-		cam.end();
+	ofDrawBox(sin(ofGetElapsedTimef()*0.1231)*-50, 0, 0, 10, 10, 10);
+	ofDrawBox(0, sin(ofGetElapsedTimef()*0.1231)*-50, 0, 10, 10, 10);
+	ofDrawBox(0, 0, sin(ofGetElapsedTimef()*0.1231)*-50, 10, 10, 10);
+	ofDrawBox(0, sin(ofGetElapsedTimef()*0.1231)*-50, sin(ofGetElapsedTimef()*0.1231)*-50, 10, 10, 10);
+	ofDrawBox(sin(ofGetElapsedTimef()*0.1231)*-50, sin(ofGetElapsedTimef()*0.1231)*-50, sin(ofGetElapsedTimef()*0.1231)*-50, 10, 10, 10);
+	ofPopMatrix();
+	cam.end();
 
 //	ofDrawBitmapStringHighlight("EasyCam View",
 //			ofGetWidth() - ofGetHeight() / 2, ofGetHeight() / 2 - 20);
@@ -219,7 +217,7 @@ void ofApp::resume() {
 //--------------------------------------------------------------
 void ofApp::reloadTextures() {
 	planet.setUseVbo(false);
-	planet.set(1000, 100);
+	planet.set(1000, 50);
 	planet.setPosition(0, 0, 0);
 }
 
