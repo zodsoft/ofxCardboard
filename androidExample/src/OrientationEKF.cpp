@@ -1,67 +1,84 @@
-/*
- * OrientationEKF.cpp
- *
- *  Created on: Feb 24, 2015
- *      Author: dantheman
- */
-#include "OrientationEKF.h"
-#include "So3Util.h"
-OrientationEKF::OrientationEKF() {
+//
+//  OrientationEKF.mm
+//  CardboardSDK-iOS
+//
 
+#include "OrientationEKF.h"
+#include "SO3Util.h"
+
+ofMatrix4x4 OrientationEKF::glMatrixFromSo3(Matrix3x3d *so3) {
+	vector<float> matrix;
+	matrix.resize(16);
+	for (int r = 0; r < 3; r++) {
+		for (int c = 0; c < 3; c++) {
+			matrix[(4 * c + r)] = so3->get(r, c);
+		}
+	}
+	matrix[3] = 0.0;
+	matrix[7] = 0.0;
+	matrix[11] = 0.0;
+	matrix[12] = 0.0;
+	matrix[13] = 0.0;
+	matrix[14] = 0.0;
+	matrix[15] = 1.0;
+	ofMatrix4x4 mat;
+	mat.set(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5],
+			matrix[6], matrix[7], matrix[8], matrix[9], matrix[10], matrix[11],
+			matrix[12], matrix[13], matrix[14], matrix[15]);
+	return mat;
+}
+
+OrientationEKF::OrientationEKF() :
+		_previousAccelNorm(0.0), _movingAverageAccelNormChange(0.0), _timestepFilterInit(
+				false), _gyroFilterValid(true)
+
+{
+	reset();
 }
 
 OrientationEKF::~OrientationEKF() {
-
 }
 
 void OrientationEKF::reset() {
-	sensorTimeStampGyro = 0;
-	sensorTimeStampAcc = 0;
-	sensorTimeStampMag = 0;
-
-	so3SensorFromWorld.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
-	so3LastMotion.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
-
-	mP.set(25.0, 0, 0, 0, 25.00, 0, 0, 0, 25.0);
-
-	mQ.set(1.0, 0, 0, 0, 1.0, 0, 0, 0, 1.0);
-
-	mR.set(0.0625, 0, 0, 0, 0.0625, 0, 0, 0, 0.0625);
-
-	mRaccel.set(0.5625, 0, 0, 0, 0.5625, 0, 0, 0, 0.5625);
-
-	mS.set(0, 0, 0, 0, 0, 0, 0, 0, 0);
-	mH.set(0, 0, 0, 0, 0, 0, 0, 0, 0);
-	mK.set(0, 0, 0, 0, 0, 0, 0, 0, 0);
-	mNu = ofVec3f(0, 0, 0);
-	mz = ofVec3f(0, 0, 0);
-	mh = ofVec3f(0, 0, 0);
-	mu = ofVec3f(0, 0, 0);
-	mx = ofVec3f(0, 0, 0);
-
-	down.set(9.81, 0.0, 0.0);
-	north.set(0.0, 1.0, 0.0);
-
-	lastGyro.set(0, 0, 0);
-	previousAccelNorm = down;
-
-	alignedToNorth = false;
-	alignedToGravity = false;
-
+	_sensorTimeStampGyro = 0.0;
+	_so3SensorFromWorld.setIdentity();
+	_so3LastMotion.setIdentity();
+	_mP.setZero();
+	_mP.setSameDiagonal(25.0);
+	_mQ.setZero();
+	_mQ.setSameDiagonal(1.0);
+	_mR.setZero();
+	_mR.setSameDiagonal(0.0625);
+	_mRAcceleration.setZero();
+	_mRAcceleration.setSameDiagonal(0.5625);
+	_mS.setZero();
+	_mH.setZero();
+	_mK.setZero();
+	_vNu.setZero();
+	_vZ.setZero();
+	_vH.setZero();
+	_vU.setZero();
+	_vX.setZero();
+	// Flipped from Android so it uses the same convention as CoreMotion
+	// was: _vDown.set(0.0, 0.0, 9.81);
+	_vDown.set(0.0, 0.0, -9.81);
+	_vNorth.set(0.0, 1.0, 0.0);
+	_alignedToGravity = false;
+	_alignedToNorth = false;
 }
+
 bool OrientationEKF::isReady() {
-	return alignedToGravity;
+	return _alignedToGravity;
 }
-float OrientationEKF::getHeadingDegrees() {
-	float x = so3SensorFromWorld.g;
-	float y = so3SensorFromWorld.h;
-	float mag = sqrt(x * x + y * y);
 
+double OrientationEKF::getHeadingDegrees() {
+	double x = _so3SensorFromWorld.get(2, 0);
+	double y = _so3SensorFromWorld.get(2, 1);
+	double mag = sqrt(x * x + y * y);
 	if (mag < 0.1) {
 		return 0.0;
 	}
-
-	double heading = -90.0 - atan2(y, x) / PI * 180.0;
+	double heading = -90.0 - atan2(y, x) * RAD_TO_DEG;
 	if (heading < 0.0) {
 		heading += 360.0;
 	}
@@ -70,382 +87,149 @@ float OrientationEKF::getHeadingDegrees() {
 	}
 	return heading;
 }
-void OrientationEKF::setHeadingDegrees(float heading) {
-	float currentHeading = getHeadingDegrees();
-	float deltaHeading = heading - currentHeading;
-	float s = sin(deltaHeading / 180.0 * PI);
-	float c = cos(deltaHeading / 180.0 * PI);
 
-	ofMatrix3x3 setHeadingDegreesTempM1 = ofMatrix3x3(c, -s, 0.0, s, c, 0.0,
-			0.0, 0.0, 1.0);
-	so3SensorFromWorld = so3SensorFromWorld * setHeadingDegreesTempM1;
-}
-
-void OrientationEKF::processGyro(ofVec3f gyro, long sensorTimeStamp) {
-	float kTimeThreshold = 0.04;
-	float kdTdefault = 0.01;
-	if (sensorTimeStampGyro != 0) {
-		float dT = (float) (sensorTimeStamp - sensorTimeStampGyro) * 1E-6;
-		//ofLog()<<dT<<endl;
-		if (dT > kTimeThreshold)
-			dT = gyroFilterValid ? filteredGyroTimestep : kdTdefault;
-		else {
-			filterGyroTimestep(dT);
-		}
-
-		mu.set(gyro.x * -dT, gyro.y * -dT, gyro.z * -dT);
-		So3.sO3FromMu(mu, so3LastMotion);
-
-		processGyroTempM1 = so3SensorFromWorld;
-		processGyroTempM1 = so3LastMotion * so3SensorFromWorld;
-		so3SensorFromWorld = processGyroTempM1;
-
-		updateCovariancesAfterMotion();
-
-		processGyroTempM2 = mQ;
-		processGyroTempM2 *= (dT * dT);
-		mP += processGyroTempM2;
-	}
-	sensorTimeStampGyro = sensorTimeStamp;
-	lastGyro = gyro;
-}
-
-void OrientationEKF::mult(ofMatrix3x3 a, ofVec3f v, ofVec3f& result) {
-	float x = a.a * v.x + a.b * v.y + a.c * v.z;
-	float y = a.d * v.x + a.e * v.y + a.f * v.z;
-	float z = a.g * v.x + a.h * v.y + a.i * v.z;
-	result.x = x;
-	result.y = y;
-	result.z = z;
-}
-
-void OrientationEKF::processAcc(ofVec3f acc, long sensorTimeStamp) {
-	mz.set(acc.x, acc.y, acc.z);
-	updateAccelCovariance(mz);
-	if (alignedToGravity) {
-		accObservationFunctionForNumericalJacobian(so3SensorFromWorld, mNu);
-
-		float eps = 1.0E-6;
-		for (int dof = 0; dof < 3; dof++) {
-			ofVec3f delta = processAccVDelta;
-			delta.set(0, 0, 0);
-			if (dof == 0)
-				delta.x = eps;
-			else if (dof == 1)
-				delta.y = eps;
-			else
-				delta.z = eps;
-
-			So3.sO3FromMu(delta, processAccTempM1);
-			processAccTempM2 = processAccTempM1 * so3SensorFromWorld;
-
-			accObservationFunctionForNumericalJacobian(processAccTempM2,
-					processAccTempV1);
-
-			ofVec3f withDelta = processAccTempV1;
-
-			processAccTempV2 = mNu - withDelta;
-			processAccTempV2.scale(1.0 / eps);
-			if (dof == 0) {
-				mH.a = processMagTempV2.x;
-				mH.d = processMagTempV2.y;
-				mH.g = processMagTempV2.z;
-			} else if (dof == 1) {
-				mH.b = processMagTempV2.x;
-				mH.e = processMagTempV2.y;
-				mH.h = processMagTempV2.z;
-			} else {
-				mH.c = processMagTempV2.x;
-				mH.f = processMagTempV2.y;
-				mH.i = processMagTempV2.z;
-			}
-		}
-
-		processAccTempM3 = mH;
-		processAccTempM3.transpose();
-		processAccTempM4 = mP * processAccTempM3;
-		processAccTempM5 = mH * processAccTempM4;
-		mS = processAccTempM5 + mRaccel;
-		processAccTempM3 = mS;
-		processAccTempM3.invert();
-		processAccTempM4 = mH;
-		processAccTempM4.transpose();
-		processAccTempM5 = processAccTempM4 * processAccTempM3;
-		mK = mP * processAccTempM5;
-
-		mult(mK, mNu, mx);
-
-		processAccTempM3 = mK * mH;
-		processAccTempM4.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
-		processAccTempM4 -= processAccTempM3;
-		processAccTempM3 = processAccTempM4 * mP;
-		mP = processAccTempM3;
-
-		So3.sO3FromMu(mx, so3LastMotion);
-
-		so3SensorFromWorld = so3LastMotion * so3SensorFromWorld;
-
-		updateCovariancesAfterMotion();
-	} else {
-		So3.sO3FromTwoVec(down, mz, so3SensorFromWorld);
-		alignedToGravity = true;
-	}
-	sensorTimeStampAcc = sensorTimeStamp;
-}
-
-void OrientationEKF::updateAccelCovariance(ofVec3f currentAccelNorm) {
-	ofVec3f currentAccelNormChange = (currentAccelNorm - previousAccelNorm);
-	previousAccelNorm = currentAccelNorm;
-
-	float kSmoothingFactor = 0.9;
-	movingAverageAccelNormChange = movingAverageAccelNormChange
-			* (kSmoothingFactor)
-			+ currentAccelNormChange * (1 - kSmoothingFactor);
-	//ofLog() << "updateAccelCovariance movingAverageAccelNormChange "
-	//		<< movingAverageAccelNormChange.length() << endl;
-	kMaxAccelNormChange = 0.15;
-
-	ofVec3f normChangeRatio = (movingAverageAccelNormChange)/ kMaxAccelNormChange;
-
-//	ofLog() << "updateAccelCovariance normChangeRatio "
-//			<< normChangeRatio.length() << endl;
-
-	float length2 = min(7.0, 0.75 + normChangeRatio.length() * 6.25);
-	mRaccel.set(length2*length2, 0, 0, 0, length2*length2, 0, 0, 0, length2*length2);
-}
-
-void OrientationEKF::processMag(ofVec3f mag, long sensorTimeStamp) {
-	if (!alignedToGravity) {
-		return;
-	}
-	mz.set(mag.x, mag.y, mag.z);
-	mz.normalize();
-
-	ofVec3f downInSensorFrame;
-
-	downInSensorFrame.x = so3SensorFromWorld.c;
-	downInSensorFrame.y = so3SensorFromWorld.f;
-	downInSensorFrame.z = so3SensorFromWorld.i;
-
-	processMagTempV1 = mz.getCrossed(downInSensorFrame);
-	ofVec3f perpToDownAndMag = processMagTempV1;
-	perpToDownAndMag.normalize();
-
-	processMagTempV2 = downInSensorFrame.getCrossed(perpToDownAndMag);
-	ofVec3f magHorizontal = processMagTempV2;
-
-	magHorizontal.normalize();
-	mz.set(magHorizontal);
-
-	if (alignedToNorth) {
-		magObservationFunctionForNumericalJacobian(so3SensorFromWorld, mNu);
-
-		float eps = 1.0E-6;
-		for (int dof = 0; dof < 3; dof++) {
-			ofVec3f delta = processMagTempV3;
-			delta.set(0, 0, 0);
-			if (dof == 0)
-				delta.x = eps;
-			else if (dof == 1)
-				delta.y = eps;
-			else
-				delta.z = eps;
-
-			So3.sO3FromMu(delta, processMagTempM1);
-			processMagTempM2 = processMagTempM1 * so3SensorFromWorld;
-
-			magObservationFunctionForNumericalJacobian(processMagTempM2,
-					processMagTempV4);
-
-			ofVec3f withDelta = processMagTempV4;
-
-			processMagTempV5 = mNu - withDelta;
-			processMagTempV5 *= (1.0 / eps);
-
-			if (dof == 0) {
-				mH.a = processMagTempV5.x;
-				mH.d = processMagTempV5.y;
-				mH.g = processMagTempV5.z;
-			} else if (dof == 1) {
-				mH.b = processMagTempV5.x;
-				mH.e = processMagTempV5.y;
-				mH.h = processMagTempV5.z;
-			} else {
-				mH.c = processMagTempV5.x;
-				mH.f = processMagTempV5.y;
-				mH.i = processMagTempV5.z;
-			}
-		}
-
-		processMagTempM4 = mH;
-		processMagTempM4.transpose();
-		processMagTempM5 = mP * processMagTempM4;
-		processMagTempM6 = mH * processMagTempM5;
-		mS = processMagTempM6 + mR;
-
-		processMagTempM4 = mS;
-		processMagTempM4.invert();
-		processMagTempM4.transpose();
-		processMagTempM6 = processMagTempM5 * processMagTempM4;
-		mK = mP * processMagTempM6;
-
-		mult(mK, mNu, mx);
-
-		processMagTempM4 = mK * mH;
-		processMagTempM5.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
-		processMagTempM5 = processMagTempM5 - processMagTempM4;
-		processMagTempM4 = processMagTempM5 * mP;
-		mP = processMagTempM4;
-
-		So3.sO3FromMu(mx, so3LastMotion);
-
-		processMagTempM4 = so3LastMotion * so3SensorFromWorld;
-		so3SensorFromWorld = processMagTempM4;
-
-		updateCovariancesAfterMotion();
-	} else {
-		magObservationFunctionForNumericalJacobian(so3SensorFromWorld, mNu);
-		So3.sO3FromMu(mNu, so3LastMotion);
-
-		processMagTempM4 = so3LastMotion * so3SensorFromWorld;
-		so3SensorFromWorld = processMagTempM4;
-
-		updateCovariancesAfterMotion();
-		alignedToNorth = true;
-	}
+void OrientationEKF::setHeadingDegrees(double heading) {
+	double currentHeading = getHeadingDegrees();
+	double deltaHeading = heading - currentHeading;
+	double s = sin(deltaHeading * DEG_TO_RAD);
+	double c = cos(deltaHeading * DEG_TO_RAD);
+	Matrix3x3d deltaHeadingRotationMatrix(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+	Matrix3x3d::mult(&_so3SensorFromWorld, &deltaHeadingRotationMatrix,
+			&_so3SensorFromWorld);
 }
 
 ofMatrix4x4 OrientationEKF::getGLMatrix() {
-	return glMatrixFromSo3(so3SensorFromWorld);
+	return glMatrixFromSo3(&_so3SensorFromWorld);
 }
 
 ofMatrix4x4 OrientationEKF::getPredictedGLMatrix(
-		float secondsAfterLastGyroEvent) {
-//	ofLog() << "headTracking getPredictedGLMatrix" << secondsAfterLastGyroEvent
-//			<< endl;
-	float dT = secondsAfterLastGyroEvent;
-	ofVec3f pmu = getPredictedGLMatrixTempV1;
-	pmu = lastGyro;
-	pmu.scale(-dT);
-
-	So3.sO3FromMu(pmu, getPredictedGLMatrixTempM1);
-
-	getPredictedGLMatrixTempM2 = getPredictedGLMatrixTempM1
-			* so3SensorFromWorld;
-
-	ofMatrix4x4 foo = glMatrixFromSo3(getPredictedGLMatrixTempM2);
-	return glMatrixFromSo3(getPredictedGLMatrixTempM2);
+		double secondsAfterLastGyroEvent) {
+	double dT = secondsAfterLastGyroEvent;
+	Vector3d pmu(_lastGyro.x * -dT, _lastGyro.y * -dT, _lastGyro.z * -dT);
+	Matrix3x3d so3PredictedMotion;
+	SO3Util::so3FromMu(&pmu, &so3PredictedMotion);
+	Matrix3x3d so3PredictedState;
+	Matrix3x3d::mult(&so3PredictedMotion, &_so3SensorFromWorld,
+			&so3PredictedState);
+	return glMatrixFromSo3(&so3PredictedState);
 }
 
-ofMatrix3x3 OrientationEKF::getRotationMatrix() {
-	return so3SensorFromWorld;
-}
+void OrientationEKF::processGyro(ofVec3f gyro, double sensorTimeStamp) {
+	if (_sensorTimeStampGyro != 0.0) {
 
-bool OrientationEKF::isAlignedToGravity() {
-	return alignedToGravity;
-}
-
-bool OrientationEKF::isAlignedToNorth() {
-	return alignedToNorth;
-}
-
-ofMatrix4x4 OrientationEKF::glMatrixFromSo3(ofMatrix3x3 mat) {
-//    cout<<"glMatrixFromSo3 - begin"<<endl;
-//    cout<<mat<<endl;
-//    cout<<"glMatrixFromSo3 - end"<<endl;
-	vector<float> ptr;
-	ptr.resize(16);
-	for (int r = 0; r < 3; r++) {
-		for (int c = 0; c < 3; c++) {
-			if (r == 0) {
-				if (c == 0) {
-					ptr[(4 * c + r)] = mat.a;
-				} else if (c == 1) {
-					ptr[(4 * c + r)] = mat.b;
-				} else {
-					ptr[(4 * c + r)] = mat.c;
-				}
-			} else if (r == 1) {
-				if (c == 0) {
-					ptr[(4 * c + r)] = mat.d;
-				} else if (c == 1) {
-					ptr[(4 * c + r)] = mat.e;
-				} else {
-					ptr[(4 * c + r)] = mat.f;
-				}
-			} else {
-				if (c == 0) {
-					ptr[(4 * c + r)] = mat.g;
-				} else if (c == 1) {
-					ptr[(4 * c + r)] = mat.h;
-				} else {
-					ptr[(4 * c + r)] = mat.i;
-				}
-			}
-
+		double dT = (sensorTimeStamp - _sensorTimeStampGyro)*1E-6;
+		if (dT > 0.04f) {
+			dT = _gyroFilterValid ? _filteredGyroTimestep : 0.01;
+		} else {
+			filterGyroTimestep(dT);
 		}
+
+		_vU.set(gyro.x * -dT, gyro.y * -dT, gyro.z * -dT);
+		SO3Util::so3FromMu(&_vU, &_so3LastMotion);
+		Matrix3x3d::mult(&_so3LastMotion, &_so3SensorFromWorld,
+				&_so3SensorFromWorld);
+		updateCovariancesAfterMotion();
+		Matrix3x3d temp;
+		temp.set(&_mQ);
+		temp.scale(dT * dT);
+		_mP.plusEquals(&temp);
+
 	}
-	float tmp62_61 = (ptr[11] = 0.0);
-	ptr[7] = tmp62_61;
-	ptr[3] = tmp62_61;
-	float tmp86_85 = (ptr[14] = 0.0);
-	ptr[13] = tmp86_85;
-	ptr[12] = tmp86_85;
-
-	ptr[15] = 1.0;
-
-	ofMatrix4x4 rotationMatrix = ofMatrix4x4(ptr[0], ptr[1], ptr[2], ptr[3],
-			ptr[4], ptr[5], ptr[6], ptr[7], ptr[8], ptr[9], ptr[10], ptr[11],
-			ptr[12], ptr[13], ptr[14], ptr[15]);
-
-//    ofLog()<<ofToString(rotationMatrix, 5)<<endl;
-
-	return rotationMatrix;
+	_sensorTimeStampGyro = sensorTimeStamp;
+	_lastGyro = gyro;
 }
-void OrientationEKF::filterGyroTimestep(float timeStep) {
-	float kFilterCoeff = 0.95;
-	float kMinSamples = 10.0;
-	if (!timestepFilterInit) {
-		filteredGyroTimestep = timeStep;
-		numGyroTimestepSamples = 1;
-		timestepFilterInit = true;
+
+void OrientationEKF::processAcceleration(ofVec3f acc, double sensorTimeStamp) {
+	_vZ.set(acc.x, acc.y, acc.z);
+	updateAccelerationCovariance(_vZ.length());
+	if (_alignedToGravity) {
+		accelerationObservationFunctionForNumericalJacobian(
+				&_so3SensorFromWorld, &_vNu);
+		const double eps = 1.0E-7;
+		for (int dof = 0; dof < 3; dof++) {
+			Vector3d delta;
+			delta.setZero();
+			delta.setComponent(dof, eps);
+			Matrix3x3d tempM;
+			SO3Util::so3FromMu(&delta, &tempM);
+			Matrix3x3d::mult(&tempM, &_so3SensorFromWorld, &tempM);
+			Vector3d tempV;
+			accelerationObservationFunctionForNumericalJacobian(&tempM, &tempV);
+			Vector3d::sub(&_vNu, &tempV, &tempV);
+			tempV.scale(1.0 / eps);
+			_mH.setColumn(dof, &tempV);
+		}
+
+		Matrix3x3d mHt;
+		_mH.transpose(&mHt);
+		Matrix3x3d temp;
+		Matrix3x3d::mult(&_mP, &mHt, &temp);
+		Matrix3x3d::mult(&_mH, &temp, &temp);
+		Matrix3x3d::add(&temp, &_mRAcceleration, &_mS);
+		_mS.invert(&temp);
+		Matrix3x3d::mult(&mHt, &temp, &temp);
+		Matrix3x3d::mult(&_mP, &temp, &_mK);
+		Matrix3x3d::mult(&_mK, &_vNu, &_vX);
+		Matrix3x3d::mult(&_mK, &_mH, &temp);
+		Matrix3x3d temp2;
+		temp2.setIdentity();
+		temp2.minusEquals(&temp);
+		Matrix3x3d::mult(&temp2, &_mP, &_mP);
+		SO3Util::so3FromMu(&_vX, &_so3LastMotion);
+		Matrix3x3d::mult(&_so3LastMotion, &_so3SensorFromWorld,
+				&_so3SensorFromWorld);
+		updateCovariancesAfterMotion();
 	} else {
-		filteredGyroTimestep = (kFilterCoeff * filteredGyroTimestep
-				+ 0.05 * timeStep);
-		numGyroTimestepSamples++;
-		if (numGyroTimestepSamples > kMinSamples)
-			gyroFilterValid = true;
+		SO3Util::so3FromTwoVecN(&_vDown, &_vZ, &_so3SensorFromWorld);
+		_alignedToGravity = true;
 	}
-
 }
+
+void OrientationEKF::filterGyroTimestep(double timestep) {
+	const double kFilterCoeff = 0.95;
+	if (!_timestepFilterInit) {
+		_filteredGyroTimestep = timestep;
+		_numGyroTimestepSamples = 1;
+		_timestepFilterInit = true;
+	} else {
+		_filteredGyroTimestep = kFilterCoeff * _filteredGyroTimestep
+				+ (1.0 - kFilterCoeff) * timestep;
+		++_numGyroTimestepSamples;
+		_gyroFilterValid = (_numGyroTimestepSamples > 10);
+	}
+}
+
 void OrientationEKF::updateCovariancesAfterMotion() {
-	updateCovariancesAfterMotionTempM1 = so3LastMotion;
-	updateCovariancesAfterMotionTempM1.transpose();
-	updateCovariancesAfterMotionTempM2 = mP
-			* updateCovariancesAfterMotionTempM1;
-	mP = so3LastMotion * updateCovariancesAfterMotionTempM2;
-	so3LastMotion.set(1, 0, 0, 0, 1, 0, 0, 0, 1);
+	Matrix3x3d temp;
+	_so3LastMotion.transpose(&temp);
+	Matrix3x3d::mult(&_mP, &temp, &temp);
+	Matrix3x3d::mult(&_so3LastMotion, &temp, &_mP);
+	_so3LastMotion.setIdentity();
 }
-void OrientationEKF::accObservationFunctionForNumericalJacobian(
-		ofMatrix3x3 so3SensorFromWorldPred, ofVec3f & result) {
-	mult(so3SensorFromWorldPred, down, mh);
-	So3.sO3FromTwoVec(mh, mz, accObservationFunctionForNumericalJacobianTempM);
-	So3.muFromSO3(accObservationFunctionForNumericalJacobianTempM, result);
-}
-void OrientationEKF::magObservationFunctionForNumericalJacobian(
-		ofMatrix3x3 so3SensorFromWorldPred, ofVec3f & result) {
-	mult(so3SensorFromWorldPred, north, mh);
-	So3.sO3FromTwoVec(mh, mz, magObservationFunctionForNumericalJacobianTempM);
 
-	So3.muFromSO3(magObservationFunctionForNumericalJacobianTempM, result);
+void OrientationEKF::updateAccelerationCovariance(double currentAccelNorm) {
+	double currentAccelNormChange = fabs(currentAccelNorm - _previousAccelNorm);
+	_previousAccelNorm = currentAccelNorm;
+	const double kSmoothingFactor = 0.5;
+	_movingAverageAccelNormChange = kSmoothingFactor
+			* _movingAverageAccelNormChange
+			+ (1.0 - kSmoothingFactor) * currentAccelNormChange;
+	const double kMaxAccelNormChange = 0.15;
+	const double kMinAccelNoiseSigma = 0.75;
+	const double kMaxAccelNoiseSigma = 7.0;
+	double normChangeRatio = _movingAverageAccelNormChange
+			/ kMaxAccelNormChange;
+	double accelNoiseSigma = std::min(kMaxAccelNoiseSigma,
+			kMinAccelNoiseSigma
+					+ normChangeRatio
+							* (kMaxAccelNoiseSigma - kMinAccelNoiseSigma));
+	_mRAcceleration.setSameDiagonal(accelNoiseSigma * accelNoiseSigma);
 }
-ofVec3f OrientationEKF::getLastAccel() {
-	return mz;
-}
-ofVec3f OrientationEKF::getLastGyro() {
-	return lastGyro;
-}
-void OrientationEKF::arrayAssign(vector<vector<float> > data, ofMatrix3x3 m) {
-	m.set(data[0][0], data[0][1], data[0][2], data[1][0], data[1][1],
-			data[1][2], data[2][0], data[2][1], data[2][2]);
+
+void OrientationEKF::accelerationObservationFunctionForNumericalJacobian(
+		Matrix3x3d *so3SensorFromWorldPred, Vector3d *result) {
+	Matrix3x3d::mult(so3SensorFromWorldPred, &_vDown, &_vH);
+	Matrix3x3d temp;
+	SO3Util::so3FromTwoVecN(&_vH, &_vZ, &temp);
+	SO3Util::muFromSO3(&temp, result);
 }

@@ -1,107 +1,63 @@
-/*
- * OrientationEKF.h
- *
- *  Created on: Feb 24, 2015
- *      Author: dantheman
- */
+//
+//  OrientationEKF.h
+//  CardboardSDK-iOS
+//
 
 #pragma once
 #include "ofMain.h"
-#include "So3Util.h"
-class OrientationEKF {
-public:
-	OrientationEKF();
-	virtual ~OrientationEKF();
-	void reset();
-	bool isReady();
-	float getHeadingDegrees();
-	void setHeadingDegrees(float heading);
-	void processGyro(ofVec3f gyro, long sensorTimeStamp);
-	void processAcc(ofVec3f acc, long sensorTimeStamp);
-	void processMag(ofVec3f mag, long sensorTimeStamp);
-	ofVec3f getLastGyro();
-	ofVec3f getLastAccel();
-	ofMatrix4x4 getGLMatrix();
-	ofMatrix4x4 getPredictedGLMatrix(float secondsAfterLastGyroEvent);
+#include "Vector3d.h"
+#include "Matrix3x3d.h"
 
-	ofMatrix3x3 getRotationMatrix();
-	bool isAlignedToGravity();
-	bool isAlignedToNorth();
 
-private:
-	void mult(ofMatrix3x3 a, ofVec3f v, ofVec3f& result);
-	ofMatrix4x4 glMatrixFromSo3(ofMatrix3x3 so3);
-	void filterGyroTimestep(float timeStep);
-	void updateCovariancesAfterMotion();
-    void accObservationFunctionForNumericalJacobian(
-                                                    ofMatrix3x3  so3SensorFromWorldPred, ofVec3f& result);
-    void magObservationFunctionForNumericalJacobian(
-                                                    ofMatrix3x3  so3SensorFromWorldPred, ofVec3f& result);
-	void arrayAssign(vector<vector<float> > data, ofMatrix3x3 m);
-	void updateAccelCovariance(ofVec3f currentAccelNorm);
-
-	ofMatrix3x3 so3SensorFromWorld;
-	ofMatrix3x3 so3LastMotion;
-	ofMatrix3x3 mP;
-	ofMatrix3x3 mQ;
-	ofMatrix3x3 mR;
-	ofMatrix3x3 mRaccel;
-	ofMatrix3x3 mS;
-	ofMatrix3x3 mH;
-	ofMatrix3x3 mK;
-	ofVec3f mNu;
-	ofVec3f mz;
-	ofVec3f mh;
-	ofVec3f mu;
-	ofVec3f mx;
-	ofVec3f down;
-	ofVec3f north;
-	ofMatrix3x3 getPredictedGLMatrixTempM1;
-	ofMatrix3x3 getPredictedGLMatrixTempM2;
-	ofVec3f getPredictedGLMatrixTempV1;
-	ofMatrix3x3 setHeadingDegreesTempM1;
-	ofMatrix3x3 processGyroTempM1;
-	ofMatrix3x3 processGyroTempM2;
-	ofMatrix3x3 processAccTempM1;
-	ofMatrix3x3 processAccTempM2;
-	ofMatrix3x3 processAccTempM3;
-	ofMatrix3x3 processAccTempM4;
-	ofMatrix3x3 processAccTempM5;
-	ofVec3f processAccTempV1;
-	ofVec3f processAccTempV2;
-	ofVec3f processAccVDelta;
-
-	ofVec3f processMagTempV1;
-	ofVec3f processMagTempV2;
-	ofVec3f processMagTempV3;
-	ofVec3f processMagTempV4;
-	ofVec3f processMagTempV5;
-	ofMatrix3x3 processMagTempM1;
-	ofMatrix3x3 processMagTempM2;
-	ofMatrix3x3 processMagTempM4;
-	ofMatrix3x3 processMagTempM5;
-	ofMatrix3x3 processMagTempM6;
-	ofMatrix3x3 updateCovariancesAfterMotionTempM1;
-	ofMatrix3x3 updateCovariancesAfterMotionTempM2;
-	ofMatrix3x3 accObservationFunctionForNumericalJacobianTempM;
-	ofMatrix3x3 magObservationFunctionForNumericalJacobianTempM;
-
-	bool alignedToGravity;
-	bool alignedToNorth;
-
-	long sensorTimeStampGyro;
-	long sensorTimeStampAcc;
-	long sensorTimeStampMag;
-	ofVec3f lastGyro;
-	float filteredGyroTimestep;
-	bool timestepFilterInit;
-	int numGyroTimestepSamples;
-	bool gyroFilterValid;
-	So3Util So3;
-
-	ofVec3f previousAccelNorm;
-
-	ofVec3f movingAverageAccelNormChange;
-	float kMaxAccelNormChange;
+class OrientationEKF
+{
+  public:
+    OrientationEKF();
+    virtual ~OrientationEKF();
+    
+    void reset();
+    bool isReady();
+    
+    void processGyro(ofVec3f gyro, double sensorTimeStamp);
+    void processAcceleration(ofVec3f acc, double sensorTimeStamp);
+    
+    double getHeadingDegrees();
+    void setHeadingDegrees(double heading);
+    
+    ofMatrix4x4 getGLMatrix();
+    ofMatrix4x4 getPredictedGLMatrix(double secondsAfterLastGyroEvent);
+    ofMatrix4x4 glMatrixFromSo3(Matrix3x3d *so3);
+    
+  private:
+    Matrix3x3d _so3SensorFromWorld;
+    Matrix3x3d _so3LastMotion;
+    Matrix3x3d _mP;
+    Matrix3x3d _mQ;
+    Matrix3x3d _mR;
+    Matrix3x3d _mRAcceleration;
+    Matrix3x3d _mS;
+    Matrix3x3d _mH;
+    Matrix3x3d _mK;
+    Vector3d _vNu;
+    Vector3d _vZ;
+    Vector3d _vH;
+    Vector3d _vU;
+    Vector3d _vX;
+    Vector3d _vDown;
+    Vector3d _vNorth;
+    double _sensorTimeStampGyro;
+    ofVec3f _lastGyro;
+    double _previousAccelNorm;
+    double _movingAverageAccelNormChange;
+    double _filteredGyroTimestep;
+    bool _timestepFilterInit;
+    int _numGyroTimestepSamples;
+    bool _gyroFilterValid;
+    bool _alignedToGravity;
+    bool _alignedToNorth;
+    
+    void filterGyroTimestep(double timestep);
+    void updateCovariancesAfterMotion();
+    void updateAccelerationCovariance(double currentAccelNorm);
+    void accelerationObservationFunctionForNumericalJacobian(Matrix3x3d *so3SensorFromWorldPred, Vector3d *result);
 };
-

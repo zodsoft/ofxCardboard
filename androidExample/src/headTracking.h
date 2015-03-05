@@ -9,7 +9,7 @@
 #include "ofMain.h"
 #include "OrientationEKF.h"
 #include "ofxAccelerometer.h"
-#include "GyroscopeBiasEstimator.h"
+//#include "GyroscopeBiasEstimator.h"
 class headTracking {
 public:
 	headTracking();
@@ -37,15 +37,12 @@ private:
 
     ofOrientation mDisplayRotation;
     float DEFAULT_NECK_VERTICAL_OFFSET;
-    long mLastGyroEventTimeNanos;
+    unsigned long long mLastGyroEventTimeNanos;
 
     bool DEFAULT_NECK_MODEL_ENABLED;
     bool mNeckModelEnabled;
     bool mTracking;
 
-    float currentRotation;
-
-    GyroscopeBiasEstimator gyroBiasEstimator;
-
+    double currentRotation;
 };
 

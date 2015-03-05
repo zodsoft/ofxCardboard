@@ -19,27 +19,31 @@ void ofApp::setup(){
 //    accel.type = ACCEL;
 //    tracking.processSensorEvent(accel);
     
-    easycam.enableMouseInput();
+//    easycam.enableMouseInput();
     planet.set(1000, 100);
     planet.setPosition(0, 0, 0);
     //	ofLog() << "setup" << endl;
     
-    easycam.setDistance(20);
+//    easycam.setDistance(20);
     cam.setPosition(0, 0, 0);
+    
+    easycam.setPosition(0, 0, -100);
     
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
     SensorEvent gyro;
-    gyro.reading.set(sin(ofGetElapsedTimef())*0.1, cos(ofGetElapsedTimef())*0.1, sin(ofGetElapsedTimef()));
+    float foo = ofSignedNoise(ofGetElapsedTimef(), 0, 0)*9.8;
+    float bar = (9.8-foo)/2.0;
+    gyro.reading.set(foo/9.8,bar/9.8 , bar/9.8);
     gyro.timestamp = ofGetElapsedTimeMicros();
     gyro.type = GYRO;
     tracking.processSensorEvent(gyro);
     
-    
+
     SensorEvent accel;
-    accel.reading.set(sin(ofGetElapsedTimef())*9.8, cos(ofGetElapsedTimef())*9.8, sin(ofGetElapsedTimef())*0.1);
+    accel.reading.set(foo, bar , bar);
     accel.reading.normalize();
     accel.reading.scale(9.8);
     accel.timestamp = ofGetElapsedTimeMicros();
@@ -73,7 +77,7 @@ void ofApp::draw(){
     ofMatrix4x4 translate;
     translate.makeTranslationMatrix(ofVec3f(0.06, 0, 0));
     view.makeIdentityMatrix();
-    view*=headView*translate;
+    view=headView*translate;
     
     transform.setMatrix(view);
     

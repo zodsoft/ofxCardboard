@@ -23,12 +23,12 @@ class ofApp : public ofBaseApp{
 		
     headTracking tracking;
     headTransform transform;
-    ofEasyCam easycam;
+    ofCamera easycam;
 //    ofCamera  cam;
     ofNode node;
     ofMatrix4x4 view;
     ofMatrix4x4 sum;
     ofQuaternion curRot;
-    ofEasyCam cam;
+    ofCamera cam;
     ofSpherePrimitive planet;
 };

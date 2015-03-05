@@ -35,6 +35,7 @@ class ofApp : public ofxAndroidApp{
 
 		void accelerationChanged(SensorEvent & event);
 		void gyroChanged(SensorEvent & event);
+		void magChanged(SensorEvent & event);
 
 
 
