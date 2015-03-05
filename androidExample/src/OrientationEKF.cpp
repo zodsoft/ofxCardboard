@@ -61,7 +61,11 @@ void OrientationEKF::reset() {
 	_vX.setZero();
 	// Flipped from Android so it uses the same convention as CoreMotion
 	// was: _vDown.set(0.0, 0.0, 9.81);
+#ifdef OF_TARGET_ANDROID
+	_vDown.set(9.81, 0.0, 0.0);
+#else OF_TARGET_IOS
 	_vDown.set(0.0, 0.0, -9.81);
+#endif
 	_vNorth.set(0.0, 1.0, 0.0);
 	_alignedToGravity = false;
 	_alignedToNorth = false;
@@ -219,7 +223,7 @@ void OrientationEKF::updateAccelerationCovariance(double currentAccelNorm) {
 	const double kMaxAccelNoiseSigma = 7.0;
 	double normChangeRatio = _movingAverageAccelNormChange
 			/ kMaxAccelNormChange;
-	double accelNoiseSigma = std::min(kMaxAccelNoiseSigma,
+	double accelNoiseSigma = min(kMaxAccelNoiseSigma,
 			kMinAccelNoiseSigma
 					+ normChangeRatio
 							* (kMaxAccelNoiseSigma - kMinAccelNoiseSigma));

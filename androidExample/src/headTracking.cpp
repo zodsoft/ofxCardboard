@@ -48,12 +48,12 @@ ofMatrix4x4 headTracking::getLastHeadView(ofMatrix4x4 headView) {
 						0.0, ofVec3f(0, 1, 0)));
 		mEkfToHeadTracker.makeRotationMatrix(
 				ofQuaternion(0.0, ofVec3f(1, 0, 0), rotation, ofVec3f(0, 0, 1),
-						0.0, ofVec3f(0, 0, 1)));
+						0.0, ofVec3f(0, 1, 0)));
 	}
 	double secondsSinceLastGyroEvent = (ofGetElapsedTimeMicros() - mLastGyroEventTimeNanos)*1E-6;
 
 
-	double secondsToPredictForward = secondsSinceLastGyroEvent + 0.00166666666;
+	double secondsToPredictForward = secondsSinceLastGyroEvent + 0.0166666666;
 	mTmpHeadView = mTracker.getPredictedGLMatrix(secondsToPredictForward);
 	mTmpHeadView2.makeFromMultiplicationOf(mSensorToDisplay, mTmpHeadView);
 	headView.makeFromMultiplicationOf(mTmpHeadView2, mEkfToHeadTracker);
@@ -68,22 +68,15 @@ ofMatrix4x4 headTracking::getLastHeadView(ofMatrix4x4 headView) {
 
 void headTracking::reset() {
 	mTracker.reset();
-//	gyroBiasEstimator.reset();
 }
 
 void headTracking::processSensorEvent(SensorEvent event) {
 	if (event.type == ACCEL) {
 		mLatestAcc = event.reading;
 		mTracker.processAcceleration(mLatestAcc, event.timestamp);
-		//gyroBiasEstimator.processAccelerometer(mLatestAcc, event.timestamp);
 	} else if (event.type == GYRO) {
 		mLastGyroEventTimeNanos = event.timestamp;
 		mLatestGyro = event.reading;
-		//gyroBiasEstimator.processGyroscope(mLatestGyro, event.timestamp);
-		//mGyroBias  = gyroBiasEstimator.getGyroBias();
-		//mLatestGyro-=mGyroBias;
 		mTracker.processGyro(mLatestGyro, event.timestamp);
-	}//else if(event.type == MAG){
-//		mTracker.processMag(event.reading, event.timestamp);
-//	}
+	}
 }
