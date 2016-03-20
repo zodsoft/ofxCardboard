@@ -69,7 +69,7 @@ void ofApp::draw() {
 
 	rot = node.getOrientationQuat();
 
-	cam.setPosition(-0.6 / 2.0, 0, 0);
+	cam.setPosition(-0.6, 0, 0);
 //    cam.setOrientation(rot);
 
 	ofSetColor(255, 0, 255);
@@ -97,12 +97,11 @@ void ofApp::draw() {
 	ofPopMatrix();
 	cam.end();
 
-	cam.setPosition(0.6 / 2.0, 0, 0);
+	cam.setPosition(0.6, 0, 0);
 	cam.begin(
 			ofRectangle(ofGetWidth() / 2, 0, ofGetWidth() / 2, ofGetHeight()));
 	ofSetColor(255, 0, 255);
 	ofPushMatrix();
-	rot.getRotate(angle, axis);
 	ofRotate(angle, axis.x, axis.y, axis.z);
 	planet.drawWireframe();
 	ofSetColor(255, 255, 0);

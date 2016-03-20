@@ -44,7 +44,7 @@ ofMatrix4x4 headTracking::getLastHeadView(ofMatrix4x4 headView) {
 		mDisplayRotation = fooRot;
 
 		mSensorToDisplay.makeRotationMatrix(
-				ofQuaternion(0.0, ofVec3f(1, 0, 0), -rotation, ofVec3f(0, 0, 1),
+				ofQuaternion(-180.0, ofVec3f(1, 0, 0), -rotation, ofVec3f(0, 0, 1),
 						0.0, ofVec3f(0, 1, 0)));
 		mEkfToHeadTracker.makeRotationMatrix(
 				ofQuaternion(0.0, ofVec3f(1, 0, 0), rotation, ofVec3f(0, 0, 1),
@@ -53,7 +53,7 @@ ofMatrix4x4 headTracking::getLastHeadView(ofMatrix4x4 headView) {
 	double secondsSinceLastGyroEvent = (ofGetElapsedTimeMicros() - mLastGyroEventTimeNanos)*1E-6;
 
 
-	double secondsToPredictForward = secondsSinceLastGyroEvent + 0.0166666666;
+	double secondsToPredictForward = secondsSinceLastGyroEvent + 0.00166666666;
 	mTmpHeadView = mTracker.getPredictedGLMatrix(secondsToPredictForward);
 	mTmpHeadView2.makeFromMultiplicationOf(mSensorToDisplay, mTmpHeadView);
 	headView.makeFromMultiplicationOf(mTmpHeadView2, mEkfToHeadTracker);
