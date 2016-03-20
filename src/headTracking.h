@@ -9,6 +9,7 @@
 #include "ofMain.h"
 #include "OrientationEKF.h"
 #include "ofxAccelerometer.h"
+#include "SensorEvent.h"
 //#include "GyroscopeBiasEstimator.h"
 class headTracking {
 public:

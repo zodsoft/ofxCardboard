@@ -23,8 +23,7 @@ ofVbo DistortionMesh::getDistortionMesh(Distortion *distortionRed,
 		float xEyeOffsetTexture, float yEyeOffsetTexture,
 		float viewportXTexture, float viewportYTexture,
 		float viewportWidthTexture, float viewportHeightTexture,
-		bool vignetteEnabled) :
-		_indices(-1), _arrayBufferID(-1), _elementBufferID(-1) {
+		bool vignetteEnabled) {
 	GLfloat vertexData[14400];
 
 	int vertexOffset = 0;
@@ -163,8 +162,8 @@ ofVbo DistortionMesh::getDistortionMesh(Distortion *distortionRed,
 	mesh.getIndices().resize(_indices);
 
 	for (int i = 0; i < _indices; i++) {
-		v.getIndices()[i] = indexData[i];
-		oi++;
+		mesh.getIndices()[i] = indexData[i];
+		i++;
 	}
 
 	ofVbo vbo;
